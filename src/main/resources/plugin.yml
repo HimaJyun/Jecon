@@ -1,0 +1,60 @@
+main: jp.jyn.jecon.Jecon
+name: "${project.artifactId}"
+version: "${project.version}"
+website: http://jyn.jp/
+author: '@HimaJyun'
+load: startup
+loadbefore: [Vault]
+
+commands:
+   money:
+      description: '"/money help" - Show helps.'
+      aliases: jecon
+
+permissions:
+  jecon.*:
+    children:
+      jecon.show: true
+      jecon.pay: true
+      jecon.show.other: true
+      jecon.give: true
+      jecon.take: true
+      jecon.set: true
+      jecon.create: true
+      jecon.remove: true
+      jecon.top: true
+      jecon.reload: true
+  jecon.user:
+    children:
+      jecon.show: true
+      jecon.pay: true
+  jecon.op:
+    children:
+      jecon.show.other: true
+      jecon.give: true
+      jecon.take: true
+      jecon.set: true
+      jecon.create: true
+      jecon.remove: true
+      jecon.top: true
+      jecon.reload: true
+  jecon.show:
+    default: true
+  jecon.pay:
+    default: true
+  jecon.show.other:
+    default: op
+  jecon.give:
+    default: op
+  jecon.take:
+    default: op
+  jecon.set:
+    default: op
+  jecon.create:
+    default: op
+  jecon.remove:
+    default: op
+  jecon.top:
+    default: op
+  jecon.reload:
+    default: op

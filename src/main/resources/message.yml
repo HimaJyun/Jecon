@@ -1,0 +1,83 @@
+# UTF-8 require.
+
+DontHavePermission: "&cYou don't have permission!!"
+AccountNotFound: "&cAccount not found."
+InvalidAmount: "&cThe amount of the specified is invalid."
+UnknownError: "&cUnknown error..."
+
+# Available macro: [%player%],[%balance%]
+Show:
+  Success: "[%player%] balance [%balance%]."
+
+# Available macro: [%player%],[%balance%]
+Pay:
+  NotEnough: "&cThe balance of the account is missing."
+  Success: "&aSent a [%balance%] to [%player%]."
+  Receive: "&aReceived a [%balance%] from [%player%]."
+
+Top:
+  Empty: "&cResult is empty."
+# Available macro: [%page%]
+  First: "&a======&r Assets rankings(Page:[%page%]) &a======"
+# Available macro: [%player%],[%balance%],[%rank%]
+  Entry: "[%rank%]:[%player%] ([%balance%])"
+
+# Available macro: [%player%],[%balance%]
+Give:
+  Success: "&aGive [%balance%] to [%player%]."
+
+# Available macro: [%player%],[%balance%]
+Take:
+  NotEnough: "&cThe balance of the account is missing."
+  Success: "&aTake the [%balance%] from the [%player%]."
+
+# Available macro: [%player%],[%balance%]
+Set:
+  Success: "&aBalance of [%player%] was set to [%balance%]."
+
+# Available macro: [%player%],[%balance%]
+Create:
+  Exists: "&cAccount already exists."
+  Success: "&aCreate the [%player%] account(Balance:[%balance%])."
+
+# Available macro: [%player%],[%balance%]
+Remove:
+  Success: "&aRemoved the [%player%] account(Balance:[%balance%])."
+
+# //*<!-- Help message. -->*/
+Help:
+  Show: "Show [player] money."
+  Pay: "Send money."
+  Top: "Show the top list."
+  Give: "Give money."
+  Take: "Take money."
+  Set: "Set money."
+  Create: "Create account."
+  Remove: "Remove account."
+  Reload: "Reload the config."
+  Help: "Show this help."
+
+# //*<!-- Color codes. -->*/
+# &0->Black(#000000)
+# &1->Dark Blue(#0000AA)
+# &2->Dark Green(#00AA00)
+# &3->Dark Aqua(#00AAAA)
+# &4->Dark Red(#AA0000)
+# &5->Purple(#AA00AA)
+# &6->Gold(#FFAA00)
+# &7->Gray(#AAAAAA)
+# &8->Dark Gray(#555555)
+# &9->Blue(#5555FF)
+# &a->Green(#55FF55)
+# &b->Aqua(#55FFFF)
+# &c->Red(#FF5555)
+# &d->Light Purple(#FF55FF)
+# &e->Yellow(#FFFF55)
+# &f->White(#FFFFFF)
+# &k->Obfuscated
+# &l->Bold
+# &m->Strikethrough
+# &n->Underline
+# &o->Italic
+# &r->Reset
+# &&->Escape the color code.

@@ -1,0 +1,63 @@
+# UTF-8 require.
+
+CreateAccountOnJoin: true
+
+DefaultBalance: 10000.0
+
+TopCommandEntryPerPage: 10
+
+Format:
+  MergeSpace: true
+  Trim: true
+  Major:
+    Single: "dollar"
+    Plural: "dollars"
+  Minor:
+    Single: "cent"
+    Plural: "cents"
+  Format: "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]"
+# Format macro(Example: 123.45)
+# [%Major%]->123
+# [%Minor%]->45
+# [%All%]->123.45
+# [%MajorCurrency%]->Major currency.
+# [%MinorCurrency%]->Minor currency.
+# Format example:
+#   "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]":
+#     123.45->123 dollars 45 cents
+#     1.35->1 dollar 35 cents
+#   "[%Major%] YEN":
+#     123.45->123 YEN
+#     1.35->1 YEN
+#   "$[%All%]":
+#     123.45->$123.45
+#     1.35->$1
+
+# Info: What is MergeSpace?
+# Summarizes the consecutive space.
+# [%Minor%] and [%MinorCurrency%] will be replaced in the blank in the case of a 0.
+# Example(amount:1.0,Format:"[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]")
+#   MergeSpace: false -> [1 doller  ]
+#   MergeSpace: true  -> [1 doller ]
+#
+# Info: What is Trim?
+# Remove the first and last space.
+# [1 doller ]
+#   Trim: false -> [1 doller ]
+#   Trim: true  -> [1 doller]
+
+Database:
+# Database type. (sqlite/mysql)
+  Type: sqlite
+  SQLite:
+    File: "jecon.db"
+  MySQL:
+    Host: "localhost"
+    Port: "3306"
+    User: "root"
+    Pass: "your_mysql_password"
+    DB: "jecon"
+    Prefix: "jecon_"
+    Poolsize: 10
+    Timeout: 600000
+#   Timeout in milliseconds.(600000=10minutes)
