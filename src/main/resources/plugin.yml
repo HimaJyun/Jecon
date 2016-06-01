@@ -1,7 +1,7 @@
 main: jp.jyn.jecon.Jecon
 name: "${project.artifactId}"
 version: "${project.version}"
-website: http://jyn.jp/
+website: http://jyn.jp/bukkit-jecon/
 author: '@HimaJyun'
 load: startup
 loadbefore: [Vault]

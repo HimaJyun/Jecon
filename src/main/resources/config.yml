@@ -31,7 +31,7 @@ Format:
 #     1.35->1 YEN
 #   "$[%All%]":
 #     123.45->$123.45
-#     1.35->$1
+#     1.35->$1.35
 
 # Info: What is MergeSpace?
 # Summarizes the consecutive space.
