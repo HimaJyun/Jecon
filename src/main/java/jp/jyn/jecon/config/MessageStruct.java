@@ -36,6 +36,7 @@ public class MessageStruct {
 	private String showSuccess;
 
 	private String payNotEnough;
+	private String paySelf;
 	private String paySuccess;
 	private String payReceive;
 
@@ -103,6 +104,7 @@ public class MessageStruct {
 		showSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Show.Success"));
 
 		payNotEnough = customconfig.replaceColor(PREFIX_RED + conf.getString("Pay.NotEnough"));
+		payNotEnough = customconfig.replaceColor(PREFIX_RED + conf.getString("Pay.Self"));
 		paySuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Pay.Success"));
 		payReceive = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Pay.Receive"));
 
@@ -158,6 +160,10 @@ public class MessageStruct {
 
 	public String getPayNotEnough() {
 		return payNotEnough;
+	}
+
+	public String getPaySelf() {
+		return paySelf;
 	}
 
 	public String getPaySuccess() {

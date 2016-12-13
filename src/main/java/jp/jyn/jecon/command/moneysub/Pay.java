@@ -65,7 +65,7 @@ public class Pay implements MoneyCommand {
 
 		Player from = (Player) sender;
 		if (from.getName().equalsIgnoreCase(targetName)) { // 自分宛送金
-			from.sendMessage(message.getAccountNotFound()); // <-専用メッセージの方が良いんだけどね。
+			from.sendMessage(message.getPaySelf());
 			return;
 		}
 

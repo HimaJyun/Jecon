@@ -12,6 +12,7 @@ Show:
 # Available macro: [%player%],[%balance%]
 Pay:
   NotEnough: "&cThe balance of the account is missing."
+  Self: "&cYou can't remit money to yourself."
   Success: "&aSent a [%balance%] to [%player%]."
   Receive: "&aReceived a [%balance%] from [%player%]."
 
