@@ -18,33 +18,22 @@ public class MySQL extends Database {
 	public MySQL(Jecon jecon) {
 		super.config = jecon.getConfigStruct();
 
-		// プレフィックスを設定しておく
-		super.prefix = super.config.getMysqlPrefix();
-		HikariConfig config = new HikariConfig();
+		jecon.getLogger().info("Connect to MySQL.");
 
-		config.setDriverClassName("com.mysql.jdbc.Driver");
+		HikariConfig hikariConfig = new HikariConfig();
+		hikariConfig.setDriverClassName("com.mysql.jdbc.Driver");
 
-		// jdbc:mysql://localhost:3306/jecon
-		StringBuilder url = new StringBuilder("jdbc:mysql://");
-		url.append(super.config.getMysqlHost());
-		url.append(":");
-		url.append(super.config.getMysqlPort());
-		url.append("/");
-		url.append(super.config.getMysqlDb());
-		config.setJdbcUrl(url.toString());
+		// for Performance
+		hikariConfig.addDataSourceProperty("cacheServerConfiguration", "true");
+		hikariConfig.addDataSourceProperty("alwaysSendSetIsolation", "false");
+		hikariConfig.addDataSourceProperty("useLocalSessionState", "true");
+		hikariConfig.addDataSourceProperty("elideSetAutoCommits", "true");
+		hikariConfig.addDataSourceProperty("maintainTimeStats", "false");
+		hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+		hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+		hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-		config.addDataSourceProperty("user", super.config.getMysqlUser());
-		config.addDataSourceProperty("password", super.config.getMysqlPass());
-
-		config.addDataSourceProperty("cachePrepStmts", "true");
-		config.addDataSourceProperty("prepStmtCacheSize", "250");
-		config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-		config.addDataSourceProperty("useServerPrepStmts", "true");
-
-		config.setMaximumPoolSize(super.config.getMysqlPoolsize());
-		config.setIdleTimeout(super.config.getMysqlTimeout());
-
-		super.setup(jecon, config);
+		super.setup(jecon, hikariConfig);
 	}
 
 	/**

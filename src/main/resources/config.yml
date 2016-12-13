@@ -47,17 +47,20 @@ Format:
 #   Trim: true  -> [1 doller]
 
 Database:
-# Database type. (sqlite/mysql)
+  # If it is less than 1, the default value is used.(default:10)
+  Poolsize: -1
+  # Timeout in milliseconds.(default:600000(10 minutes))
+  Timeout: -1
+  # Database type. (sqlite/mysql)
   Type: sqlite
   SQLite:
     File: "jecon.db"
   MySQL:
-    Host: "localhost"
-    Port: "3306"
+    Host: "localhost:3306"
+    Name: "jecon"
     User: "root"
     Pass: "your_mysql_password"
-    DB: "jecon"
     Prefix: "jecon_"
-    Poolsize: 10
-    Timeout: 600000
-#   Timeout in milliseconds.(600000=10minutes)
+    Propaties:
+      "useSSL": "false"
+      "useServerPrepStmts": "true"

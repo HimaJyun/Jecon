@@ -1,6 +1,7 @@
 package jp.jyn.jecon.config;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -57,16 +58,7 @@ public class ConfigStruct {
 	public static final String FORMAT_MACRO_MAJOR_CURRENCY = "[%MajorCurrency%]";
 	public static final String FORMAT_MACRO_MINOR_CURRENCY = "[%MinorCurrency%]";
 
-	private boolean isMysql = false;
-	private String sqliteFilePath = "";
-	private String mysqlHost = "localhost";
-	private String mysqlPort = "3306";
-	private String mysqlUser = "";
-	private String mysqlPass = "";
-	private String mysqlDb = "jecon";
-	private String mysqlPrefix = "jecon_";
-	private int mysqlPoolsize = 10;
-	private long mysqlTimeout = 600000;
+	private DbConfig dbConfig = null;
 
 	/**
 	 * 各種設定構造体を初期化します。
@@ -109,24 +101,59 @@ public class ConfigStruct {
 		formatMinorPlural = customconfig.replaceColor(conf.getString("Format.Minor.Plural", ""));
 		formatFormat = customconfig.replaceColor(conf.getString("Format.Format", ""));
 
-		if (conf.getString("Database.Type", "sqlite").equalsIgnoreCase("mysql")) {
-			// MySQL
-			isMysql = true;
-			mysqlHost = conf.getString("Database.MySQL.Host", "localhost");
-			mysqlPort = conf.getString("Database.MySQL.Port", "3306");
-			mysqlUser = conf.getString("Database.MySQL.User", "root");
-			mysqlPass = conf.getString("Database.MySQL.Pass", "pass");
-			mysqlDb = conf.getString("Database.MySQL.DB", "jecon");
-			mysqlPrefix = conf.getString("Database.MySQL.Prefix", "jecon_");
-			mysqlPoolsize = conf.getInt("Database.MySQL.Poolsize", 10);
-			mysqlTimeout = conf.getLong("Database.MySQL.Timeout", 600000);
-		} else {
-			// SQLite
-			isMysql = false;
-			sqliteFilePath = plg.getDataFolder() + File.separator + conf.getString("Database.SQLite.File", "jecon.db");
-		}
+		dbConfig = new DbConfig();
 
 		return this;
+	}
+
+	/**
+	 * データベース設定
+	 * @author HimaJyun
+	 */
+	public final class DbConfig {
+		public final boolean isMySQL;
+		public final String url;
+		public final String prefix;
+		public final int poolSize;
+		public final long timeout;
+		public final Properties propaties = new Properties();
+
+		private DbConfig() {
+			String tmp = "jdbc:";
+			if (conf.getString("Database.Type", "sqlite").equalsIgnoreCase("mysql")) {
+				isMySQL = true;
+				// mysql://localhost:3306/jecon
+				tmp += "mysql://"
+						+ conf.getString("Database.MySQL.Host", "localhost:3306")
+						+ "/"
+						+ conf.getString("Database.MySQL.Name", "jecon");
+				propaties.put("user", conf.getString("Database.MySQL.User", "root"));
+				propaties.put("password", conf.getString("Database.MySQL.Pass"));
+				prefix = conf.getString("Database.MySQL.Prefix", "jecon_");
+			} else {
+				isMySQL = false;
+				// sqlite:plugins/Jecon/jecon.db
+				File tmpFile = new File(plg.getDataFolder(),
+						conf.getString("Database.SQLite.File", "jecon.db"));
+				tmpFile.getParentFile().mkdirs();
+				// URL
+				tmp += "sqlite:" + tmpFile.getPath();
+				prefix = "";
+			}
+			// 共通設定
+			url = tmp;
+			// プロパティ取得
+			tmp = "Database." + (isMySQL ? "MySQL" : "SQLite") + ".Propaties";
+			if (conf.contains(tmp, true)) {
+				for (String key : conf.getConfigurationSection(tmp).getKeys(false)) {
+					propaties.put(key, conf.getString(tmp + "." + key));
+				}
+			}
+
+			// パフォーマンス周り
+			poolSize = conf.getInt("Database.Poolsize", -1);
+			timeout = conf.getLong("Database.Timeout", -1);
+		}
 	}
 
 	/**
@@ -210,82 +237,10 @@ public class ConfigStruct {
 	}
 
 	/**
-	 * 使用するデータベースの種類
-	 * @return trueならMySQL、falseならSQLite
+	 * データベース設定を取得
+	 * @return データベース設定
 	 */
-	public boolean isMysql() {
-		return isMysql;
-	}
-
-	/**
-	 * SQLite利用時のデータベースファイルのパス
-	 * @return ファイルパス
-	 */
-	public String getSqliteFilePath() {
-		return sqliteFilePath;
-	}
-
-	/**
-	 * MySQL利用時のホスト名
-	 * @return ホスト名
-	 */
-	public String getMysqlHost() {
-		return mysqlHost;
-	}
-
-	/**
-	 * MySQL利用時のポート番号
-	 * @return ポート番号
-	 */
-	public String getMysqlPort() {
-		return mysqlPort;
-	}
-
-	/**
-	 * MySQL利用時のユーザ名
-	 * @return ユーザ名
-	 */
-	public String getMysqlUser() {
-		return mysqlUser;
-	}
-
-	/**
-	 * MySQL利用時のパスワード
-	 * @return パスワード
-	 */
-	public String getMysqlPass() {
-		return mysqlPass;
-	}
-
-	/**
-	 * MySQL利用時のデータベース名
-	 * @return データベース名
-	 */
-	public String getMysqlDb() {
-		return mysqlDb;
-	}
-
-	/**
-	 * MySQL利用時のテーブルプレフィックス
-	 * @return プレフィックス
-	 */
-	public String getMysqlPrefix() {
-		return mysqlPrefix;
-	}
-
-	/**
-	 * MySQL利用時のHikariCPプールサイズ
-	 * @return プールサイズ
-	 */
-	public int getMysqlPoolsize() {
-		return mysqlPoolsize;
-	}
-
-	/**
-	 * MySQL利用時のタイムアウト
-	 * @return タイムアウト
-	 */
-	public long getMysqlTimeout() {
-		return mysqlTimeout;
+	public DbConfig getDbConfig() {
+		return dbConfig;
 	}
 }

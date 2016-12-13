@@ -1,6 +1,5 @@
 package jp.jyn.jecon.db.rdbms;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -12,19 +11,15 @@ import jp.jyn.jecon.db.Database;
 public class SQLite extends Database {
 
 	public SQLite(Jecon jecon) {
-		super.config = jecon.getConfigStruct();
-		String dbPath = super.config.getSqliteFilePath();
+		this.config = jecon.getConfigStruct();
 
-		HikariConfig config = new HikariConfig();
+		jecon.getLogger().info("Connect to SQLite.");
 
-		// サブディレクトリを作成
-		(new File(dbPath.substring(0, dbPath.lastIndexOf(File.separator)))).mkdirs();
+		HikariConfig hikariConfig = new HikariConfig();
+		hikariConfig.setDriverClassName("org.sqlite.JDBC");
+		//hikariConfig.setConnectionTestQuery("/* Jecon */SELECT 1");
 
-		config.setDriverClassName("org.sqlite.JDBC");
-		config.setJdbcUrl("jdbc:sqlite:" + dbPath);
-		config.setConnectionTestQuery("/* Jecon */SELECT 1");
-
-		super.setup(jecon, config);
+		super.setup(jecon, hikariConfig);
 	}
 
 	/**

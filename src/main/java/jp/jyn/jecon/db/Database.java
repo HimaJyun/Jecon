@@ -58,14 +58,25 @@ public abstract class Database {
 		if (config == null) {
 			config = jecon.getConfigStruct();
 		}
+		this.prefix = config.getDbConfig().prefix;
 
+		hikariConfig.setJdbcUrl(config.getDbConfig().url);
 		hikariConfig.setInitializationFailFast(true);
+		hikariConfig.setAutoCommit(true);
 		hikariConfig.setConnectionInitSql("/* Jecon */SELECT 1");
+
+		if (config.getDbConfig().poolSize > 0) {
+			hikariConfig.setMaximumPoolSize(config.getDbConfig().poolSize);
+		}
+		if (config.getDbConfig().timeout > 0) {
+			hikariConfig.setIdleTimeout(config.getDbConfig().timeout);
+		}
+
+		hikariConfig.setDataSourceProperties(config.getDbConfig().propaties);
 
 		// HikariDataSourceをインスタンス化
 		this.hikariDc = new HikariDataSource(hikariConfig);
 
-		// テーブルを作成(子クラスのメソッドが呼ばれる->子クラス側で処理する)
 		this.createTable();
 	}
 

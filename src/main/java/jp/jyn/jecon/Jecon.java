@@ -43,7 +43,7 @@ public class Jecon extends JavaPlugin {
 		message = (message == null ? new MessageStruct(this) : message.reloadConfig());
 
 		// データベースをロード
-		db = config.isMysql() ? new MySQL(this) : new SQLite(this);
+		db = config.getDbConfig().isMySQL ? new MySQL(this) : new SQLite(this);
 
 		// ログインイベントを有効化
 		new Login(this);
