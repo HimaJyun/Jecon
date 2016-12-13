@@ -24,7 +24,6 @@ public class Pay implements MoneyCommand {
 
 	@Override
 	public void onCommand(CommandSender sender, String[] args) {
-		//TODO:自分への送金禁止
 		// 権限チェック
 		if (!sender.hasPermission("jecon.pay")) {
 			sender.sendMessage(message.getDontHavePermission());
@@ -57,16 +56,23 @@ public class Pay implements MoneyCommand {
 			return;
 		}
 
+		String targetName = args[1];
 		// アカウント存在チェック
-		if (!db.hasAccount(args[1])) {
+		if (!db.hasAccount(targetName)) {
 			sender.sendMessage(message.getAccountNotFound());
+			return;
+		}
+
+		Player from = (Player) sender;
+		if (from.getName().equalsIgnoreCase(targetName)) { // 自分宛送金
+			from.sendMessage(message.getAccountNotFound()); // <-専用メッセージの方が良いんだけどね。
 			return;
 		}
 
 		String result;
 		String displayAmount = db.format(amount);
 		// まずは出金
-		Reason reason = db.withdrawPlayer((Player) sender, amount);
+		Reason reason = db.withdrawPlayer(from, amount);
 
 		switch (reason) {
 		case ACCOUNT_NOT_FOUND:
@@ -83,7 +89,7 @@ public class Pay implements MoneyCommand {
 			break;
 		}
 		sender.sendMessage(result
-				.replace(MessageStruct.MACRO_PLAYER, args[1])
+				.replace(MessageStruct.MACRO_PLAYER, targetName)
 				.replace(MessageStruct.MACRO_BALANCE, displayAmount));
 		// 成功以外ならエラーで帰る
 		if (reason != Reason.SUCCESS) {
@@ -91,11 +97,14 @@ public class Pay implements MoneyCommand {
 		}
 
 		// 入金
-		switch (db.depositPlayer(args[1], amount)) {
+		Player target = jecon.getServer().getPlayer(targetName);
+		reason = (target == null
+				? db.depositPlayer(targetName, amount)
+				: db.depositPlayer(target, amount));
+		switch (reason) {
 		case SUCCESS:
-			Player pl = jecon.getServer().getPlayer(args[1]);
-			if (pl != null) {
-				pl.sendMessage(message.getPayReceive()
+			if (target != null) {
+				target.sendMessage(message.getPayReceive()
 						.replace(MessageStruct.MACRO_PLAYER, sender.getName())
 						.replace(MessageStruct.MACRO_BALANCE, displayAmount));
 			}
