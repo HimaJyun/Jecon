@@ -24,7 +24,6 @@ public class Pay implements MoneyCommand {
 
 	@Override
 	public void onCommand(CommandSender sender, String[] args) {
-		//TODO:0以下送金禁止
 		//TODO:自分への送金禁止
 		// 権限チェック
 		if (!sender.hasPermission("jecon.pay")) {
@@ -49,7 +48,7 @@ public class Pay implements MoneyCommand {
 		try {
 			amount = Double.parseDouble(args[2]);
 			// 0以下なら不正
-			if (amount < 0) {
+			if (amount <= 0) {
 				sender.sendMessage(message.getInvalidAmount());
 				return;
 			}
