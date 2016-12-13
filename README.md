@@ -3,7 +3,7 @@ Economy base plugin for Bukkit/Spigot
 
 ##Characteristic
 * UUID Ready
-* 1.9 Ready
+* 1.11 Ready
 * Vault Ready
 * MySQL(+SQLite) Ready
 
