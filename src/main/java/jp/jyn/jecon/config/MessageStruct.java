@@ -19,10 +19,9 @@ public class MessageStruct {
 	 */
 	private final Plugin plg;
 
-	public static final String PREFIX_GREEN = "[" + ChatColor.GREEN + "Jecon" + ChatColor.RESET + "] ";
-	public static final String PREFIX_RED = "[" + ChatColor.RED + "Jecon" + ChatColor.RESET + "] ";
+	public static final String PREFIX = "[Jecon] ";
 
-	public static final String PLAYER_ONRY = PREFIX_RED + ChatColor.RED + "This command can only be run by a player.";
+	public static final String PLAYER_ONRY = PREFIX + ChatColor.RED + "This command can only be run by a player.";
 	public static final String MACRO_PLAYER = "[%player%]";
 	public static final String MACRO_BALANCE = "[%balance%]";
 	public static final String MACRO_PAGE = "[%page%]";
@@ -96,33 +95,33 @@ public class MessageStruct {
 		// 設定を取得
 		conf = customconfig.getConfig();
 
-		dontHavePermission = customconfig.replaceColor(PREFIX_RED + conf.getString("DontHavePermission"));
-		accountNotFount = customconfig.replaceColor(PREFIX_RED + conf.getString("AccountNotFound"));
-		invalidAmount = customconfig.replaceColor(PREFIX_RED + conf.getString("InvalidAmount"));
-		unknownError = customconfig.replaceColor(PREFIX_RED + conf.getString("UnknownError"));
+		dontHavePermission = customconfig.replaceColor(PREFIX + conf.getString("DontHavePermission"));
+		accountNotFount = customconfig.replaceColor(PREFIX + conf.getString("AccountNotFound"));
+		invalidAmount = customconfig.replaceColor(PREFIX + conf.getString("InvalidAmount"));
+		unknownError = customconfig.replaceColor(PREFIX + conf.getString("UnknownError"));
 
-		showSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Show.Success"));
+		showSuccess = customconfig.replaceColor(PREFIX + conf.getString("Show.Success"));
 
-		payNotEnough = customconfig.replaceColor(PREFIX_RED + conf.getString("Pay.NotEnough"));
-		payNotEnough = customconfig.replaceColor(PREFIX_RED + conf.getString("Pay.Self"));
-		paySuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Pay.Success"));
-		payReceive = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Pay.Receive"));
+		payNotEnough = customconfig.replaceColor(PREFIX + conf.getString("Pay.NotEnough"));
+		paySelf = customconfig.replaceColor(PREFIX + conf.getString("Pay.Self"));
+		paySuccess = customconfig.replaceColor(PREFIX + conf.getString("Pay.Success"));
+		payReceive = customconfig.replaceColor(PREFIX + conf.getString("Pay.Receive"));
 
-		topEmpty = customconfig.replaceColor(PREFIX_RED + conf.getString("Top.Empty"));
+		topEmpty = customconfig.replaceColor(PREFIX + conf.getString("Top.Empty"));
 		topFirst = customconfig.replaceColor(conf.getString("Top.First"));
 		topEntry = customconfig.replaceColor(conf.getString("Top.Entry"));
 
-		giveSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Give.Success"));
+		giveSuccess = customconfig.replaceColor(PREFIX + conf.getString("Give.Success"));
 
-		takeSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Take.Success"));
-		takeNotEnough = customconfig.replaceColor(PREFIX_RED + conf.getString("Take.NotEnough"));
+		takeSuccess = customconfig.replaceColor(PREFIX + conf.getString("Take.Success"));
+		takeNotEnough = customconfig.replaceColor(PREFIX + conf.getString("Take.NotEnough"));
 
-		setSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Set.Success"));
+		setSuccess = customconfig.replaceColor(PREFIX + conf.getString("Set.Success"));
 
-		createExists = customconfig.replaceColor(PREFIX_RED + conf.getString("Create.Exists"));
-		createSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Create.Success"));
+		createExists = customconfig.replaceColor(PREFIX + conf.getString("Create.Exists"));
+		createSuccess = customconfig.replaceColor(PREFIX + conf.getString("Create.Success"));
 
-		removeSuccess = customconfig.replaceColor(PREFIX_GREEN + conf.getString("Remove.Success"));
+		removeSuccess = customconfig.replaceColor(PREFIX + conf.getString("Remove.Success"));
 
 		helpShow = customconfig.replaceColor("/money [player] - " + conf.getString("Help.Show"));
 		helpTop = customconfig.replaceColor("/money top [page] - " + conf.getString("Help.Top"));
