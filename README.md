@@ -1,5 +1,6 @@
 #Jecon
-Economy base plugin for Bukkit/Spigot
+Economy base plugin for Bukkit/Spigot  
+[![Build Status](https://travis-ci.org/HimaJyun/Jecon.svg?branch=master)](https://travis-ci.org/HimaJyun/Jecon)
 
 ##Characteristic
 * UUID Ready
