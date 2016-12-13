@@ -22,8 +22,6 @@ import net.milkbowl.vault.economy.Economy;
 
 public class Jecon extends JavaPlugin {
 
-	//TODO:名前変えた時に問題
-
 	private ConfigStruct config = null;
 	private MessageStruct message = null;
 	private Database db = null;

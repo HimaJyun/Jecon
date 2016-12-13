@@ -1,5 +1,6 @@
 package jp.jyn.jecon.listener;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -22,10 +23,11 @@ public class Login implements Listener {
 
 	@EventHandler(ignoreCancelled = true)
 	public void onJoin(PlayerJoinEvent e) {
-		if (config.isCreateAccountOnJoin()) {
-			db.createPlayerAccount(e.getPlayer());
+		Player player = e.getPlayer();
+		if (config.isCreateAccountOnJoin() && !db.hasAccount(player)) {
+			db.createPlayerAccount(player);
 		} else {
-			db.nameUpdate(e.getPlayer());
+			db.nameUpdate(player);
 		}
 	}
 }
