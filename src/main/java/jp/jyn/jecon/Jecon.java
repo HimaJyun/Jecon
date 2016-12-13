@@ -22,6 +22,8 @@ import net.milkbowl.vault.economy.Economy;
 
 public class Jecon extends JavaPlugin {
 
+	//TODO:名前変えた時に問題
+
 	private ConfigStruct config = null;
 	private MessageStruct message = null;
 	private Database db = null;
@@ -37,7 +39,7 @@ public class Jecon extends JavaPlugin {
 			// 無効化
 			onDisable();
 		}
-
+		// TODO:ここなんかおかしい、リロード？
 		// nullなら読み込み、違えばリロード
 		if (config == null) {
 			config = new ConfigStruct(this);

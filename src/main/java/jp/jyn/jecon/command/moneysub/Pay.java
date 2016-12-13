@@ -24,6 +24,8 @@ public class Pay implements MoneyCommand {
 
 	@Override
 	public void onCommand(CommandSender sender, String[] args) {
+		//TODO:0以下送金禁止
+		//TODO:自分への送金禁止
 		// 権限チェック
 		if (!sender.hasPermission("jecon.pay")) {
 			sender.sendMessage(message.getDontHavePermission());

@@ -22,7 +22,7 @@ public class MessageStruct {
 	public static final String PREFIX_GREEN = "[" + ChatColor.GREEN + "Jecon" + ChatColor.RESET + "] ";
 	public static final String PREFIX_RED = "[" + ChatColor.RED + "Jecon" + ChatColor.RESET + "] ";
 
-	public static final String PLAYER_ONRY = PREFIX_RED + ChatColor.RED + "This command can only be run by a player.";;
+	public static final String PLAYER_ONRY = PREFIX_RED + ChatColor.RED + "This command can only be run by a player.";
 	public static final String MACRO_PLAYER = "[%player%]";
 	public static final String MACRO_BALANCE = "[%balance%]";
 	public static final String MACRO_PAGE = "[%page%]";
