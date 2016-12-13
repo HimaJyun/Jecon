@@ -84,7 +84,7 @@ public class MessageStruct {
 	/**
 	 * 設定をリロードします。
 	 */
-	public void reloadConfig() {
+	public MessageStruct reloadConfig() {
 		// デフォルトをセーブ
 		customconfig.saveDefaultConfig();
 		// confがnullではない(=リロード)
@@ -132,6 +132,8 @@ public class MessageStruct {
 		helpPay = customconfig.replaceColor("/money pay <player> <amount> - " + conf.getString("Help.Pay"));
 		helpHelp = customconfig.replaceColor("/money help - " + conf.getString("Help.Help"));
 		helpReload = customconfig.replaceColor("/money reload - " + conf.getString("Help.Reload"));
+
+		return this;
 	}
 
 	public String getDontHavePermission() {

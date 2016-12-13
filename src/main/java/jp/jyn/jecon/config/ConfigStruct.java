@@ -84,8 +84,9 @@ public class ConfigStruct {
 
 	/**
 	 * 設定をリロードします。
+	 * @return 自分自身のインスタンス
 	 */
-	public void reloadConfig() {
+	public ConfigStruct reloadConfig() {
 		// デフォルトをセーブ
 		customconfig.saveDefaultConfig();
 		// confがnullではない(=リロード)
@@ -124,6 +125,8 @@ public class ConfigStruct {
 			isMysql = false;
 			sqliteFilePath = plg.getDataFolder() + File.separator + conf.getString("Database.SQLite.File", "jecon.db");
 		}
+
+		return this;
 	}
 
 	/**

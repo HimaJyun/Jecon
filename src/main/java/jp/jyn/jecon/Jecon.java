@@ -39,19 +39,11 @@ public class Jecon extends JavaPlugin {
 			// 無効化
 			onDisable();
 		}
-		// TODO:ここなんかおかしい、リロード？
+
 		// nullなら読み込み、違えばリロード
-		if (config == null) {
-			config = new ConfigStruct(this);
-		} else {
-			config.reloadConfig();
-		}
-		// nullなら読み込み、違えばリロード
-		if (message == null) {
-			message = new MessageStruct(this);
-		} else {
-			message.reloadConfig();
-		}
+		config = (config == null ? new ConfigStruct(this) : config.reloadConfig());
+		message = (message == null ? new MessageStruct(this) : message.reloadConfig());
+
 		// データベースをロード
 		db = config.isMysql() ? new MySQL(this) : new SQLite(this);
 
