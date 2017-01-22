@@ -17,7 +17,7 @@ public class SQLite extends Database {
 
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setDriverClassName("org.sqlite.JDBC");
-		//hikariConfig.setConnectionTestQuery("/* Jecon */SELECT 1");
+		hikariConfig.setConnectionTestQuery("/* Jecon */SELECT 1");
 
 		super.setup(jecon, hikariConfig);
 	}

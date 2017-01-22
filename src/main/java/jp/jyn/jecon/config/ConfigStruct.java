@@ -144,7 +144,7 @@ public class ConfigStruct {
 			url = tmp;
 			// プロパティ取得
 			tmp = "Database." + (isMySQL ? "MySQL" : "SQLite") + ".Propaties";
-			if (conf.contains(tmp, true)) {
+			if (conf.contains(tmp)) {
 				for (String key : conf.getConfigurationSection(tmp).getKeys(false)) {
 					propaties.put(key, conf.getString(tmp + "." + key));
 				}
