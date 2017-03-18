@@ -1,24 +1,24 @@
-#Jecon
+# Jecon
 Economy base plugin for Bukkit/Spigot  
 [![Build Status](https://travis-ci.org/HimaJyun/Jecon.svg?branch=master)](https://travis-ci.org/HimaJyun/Jecon)
 
-##Characteristic
+## Characteristic
 * UUID Ready
 * 1.11 Ready
 * Vault Ready
 * MySQL(+SQLite) Ready
 
-##Installation
+## Installation
 1. [Download this plugin.](https://github.com/HimaJyun/Jecon/releases/latest "Get Jecon")
 2. drop in plugins directory.
 3. Server start.
 4. config edit.
 5. reload
 
-##Settings
+## Settings
 Please refer to the comments in the configuration file.
 
-##Command/Permission
+## Command/Permission
 |Command                                   |Permission      |Description                              |Default|
 |:-----------------------------------------|:---------------|:----------------------------------------|:------|
 |/money                                    |jecon.show      |Show your balance.                       |ALL    |
