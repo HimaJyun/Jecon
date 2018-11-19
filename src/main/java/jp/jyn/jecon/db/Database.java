@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,6 +76,28 @@ public abstract class Database {
         this.hikariDc = new HikariDataSource(hikariConfig);
 
         this.createTable();
+        // check db version
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS `meta` (" +
+                "   `key` TEXT," +
+                "   `value` TEXT" +
+                ")"
+            );
+
+            try (ResultSet resultSet = statement.executeQuery("SELECT `value` FROM `meta` WHERE key='dbversion'")) {
+                if (resultSet.next()) {
+                    if (!resultSet.getString("value").equals("1")) {
+                        throw new RuntimeException("An incompatible change was made (database can not be downgraded)");
+                    }
+                } else {
+                    statement.executeUpdate("INSERT INTO `meta` VALUES('dbversion','1')");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -607,15 +630,13 @@ public abstract class Database {
             return Reason.ACCOUNT_NOT_FOUND;
         }
 
-        // 問い合わせクエリを作成
         // UPDATE (prefix)balance SET balance=? WHERE id=?;
-        StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(prefix);
-        sql.append("balance SET balance=? WHERE id=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "UPDATE " + prefix + "balance SET balance=? WHERE id=?"
+             )) {
             // 値をセット
             prestat.setDouble(1, amount);
             prestat.setInt(2, id);

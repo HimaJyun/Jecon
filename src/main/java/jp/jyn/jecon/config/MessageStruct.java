@@ -69,9 +69,6 @@ public class MessageStruct {
      */
     public MessageStruct(Plugin plugin) {
         // プラグイン
-        /**
-         * 使用されるプラグイン
-         */
         // カスタムコンフィグクラスをインスタンス化
         customconfig = new CustomConfig(plugin, "message.yml");
 

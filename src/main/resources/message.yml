@@ -18,9 +18,9 @@ Pay:
 
 Top:
   Empty: "&cResult is empty."
-# Available macro: [%page%]
+  # Available macro: [%page%]
   First: "&a======&r Assets rankings(Page:[%page%]) &a======"
-# Available macro: [%player%],[%balance%],[%rank%]
+  # Available macro: [%player%],[%balance%],[%rank%]
   Entry: "[%rank%]:[%player%] ([%balance%])"
 
 # Available macro: [%player%],[%balance%]
@@ -82,3 +82,6 @@ Help:
 # &o->Italic
 # &r->Reset
 # &&->Escape the color code.
+
+# Don't touch
+version: 1

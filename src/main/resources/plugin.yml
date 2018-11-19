@@ -7,9 +7,9 @@ load: startup
 loadbefore: [Vault]
 
 commands:
-   money:
-      description: '"/money help" - Show helps.'
-      aliases: jecon
+  money:
+    description: '"/money help" - Show helps.'
+    aliases: jecon
 
 permissions:
   jecon.*:
