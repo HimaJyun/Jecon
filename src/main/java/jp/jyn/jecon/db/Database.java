@@ -1,5 +1,11 @@
 package jp.jyn.jecon.db;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import jp.jyn.jecon.Jecon;
+import jp.jyn.jecon.config.ConfigStruct;
+import org.bukkit.OfflinePlayer;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,14 +17,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-
-import org.bukkit.OfflinePlayer;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import jp.jyn.jecon.Jecon;
-import jp.jyn.jecon.config.ConfigStruct;
 
 /**
  * 抽象的なデータベース操作を行うクラス
@@ -33,7 +31,7 @@ public abstract class Database {
     // | ID | balance |
     // ================
 
-    public static enum Reason {
+    public enum Reason {
         ACCOUNT_NOT_FOUND, NOT_ENOUGH, SUCCESS, UNKNOWN_ERROR,
     }
 
@@ -49,9 +47,9 @@ public abstract class Database {
     protected String prefix = "";
 
     // キャッシュ
-    Map<UUID, Integer> uuidCache = new HashMap<>();
-    Map<String, Integer> nameCache = new HashMap<>();
-    Map<Integer, Double> balanceCache = new HashMap<>();
+    private final Map<UUID, Integer> uuidCache = new HashMap<>();
+    private final Map<String, Integer> nameCache = new HashMap<>();
+    private final Map<Integer, Double> balanceCache = new HashMap<>();
 
     protected void setup(Jecon jecon, HikariConfig hikariConfig) {
         this.jecon = jecon;
@@ -97,7 +95,7 @@ public abstract class Database {
      * コネクションを取得します。
      *
      * @return 取得したSQLコネクション
-     * @throws SQLException
+     * @throws SQLException getConnection SQL error
      */
     protected Connection getConnection() throws SQLException {
         return hikariDc.getConnection();
@@ -129,7 +127,7 @@ public abstract class Database {
     /**
      * ユーザのIDを取得します。
      *
-     * @param playerName 取得するプレイヤー
+     * @param player 取得するプレイヤー
      * @return 取得したID、なければ-1
      */
     private int getId(OfflinePlayer player) {
@@ -155,17 +153,13 @@ public abstract class Database {
      * @return 取得したID、なければ-1
      */
     private int getId(String value, boolean valueIsUuid) {
-        // 問い合わせクエリを作成
         // SELECT id FROM (prefix)account WHERE (uuid/name)=?
-        StringBuilder sql = new StringBuilder("SELECT id FROM ");
-        sql.append(prefix);
-        sql.append("account WHERE ");
-        sql.append(valueIsUuid ? "uuid" : "name");
-        sql.append("=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "SELECT id FROM " + prefix + "account WHERE " + (valueIsUuid ? "uuid" : "name") + "=?"
+             )) {
             // 値をセット
             prestat.setString(1, value.toLowerCase(Locale.ENGLISH));
             // 問い合わせ実行
@@ -194,31 +188,25 @@ public abstract class Database {
         list.add(id);
         Map<Integer, String> map = getName(list);
 
-        if (map.containsKey(id)) {
-            return map.get(id);
-        } else {
-            return null;
-        }
+        return map.getOrDefault(id, null);
     }
 
     /**
      * 複数のIDから名前を効率よく取得します。
      *
-     * @param id 取得するIDのリスト
+     * @param ids 取得するIDのリスト
      * @return 取得出来た名前が紐づけられたMap
      */
     private Map<Integer, String> getName(List<Integer> ids) {
+        // SELECT name FROM (prefix)account WHERE id=?
         // 結果用変数
         Map<Integer, String> result = new HashMap<>();
-        // 問い合わせクエリを作成
-        // SELECT name FROM (prefix)account WHERE id=?
-        StringBuilder sql = new StringBuilder("SELECT name FROM ");
-        sql.append(prefix);
-        sql.append("account WHERE id=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "SELECT name FROM " + prefix + "account WHERE id=?"
+             )) {
             // ループ処理
             for (int id : ids) {
                 if (id != -1) {
@@ -301,8 +289,7 @@ public abstract class Database {
     /**
      * 指定したアカウントの残高を取得します。
      *
-     * @param value       確認するアカウント名、もしくはUUID.toString()
-     * @param valueIsUuid UUIDで検索するのであればtrue、名前であればfalse
+     * @param id 確認するアカウントID
      * @return 残高、アカウントが存在しない場合は-1
      */
     private double getBalance(int id) {
@@ -317,15 +304,13 @@ public abstract class Database {
 
         // 問い合わせ結果用変数
         double result = -1;
-        // 問い合わせクエリを作成
         // SELECT balance FROM (prefix)balance WHERE id=?
-        StringBuilder sql = new StringBuilder("SELECT balance FROM ");
-        sql.append(prefix);
-        sql.append("balance WHERE id=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "SELECT balance FROM " + prefix + "balance WHERE id=?"
+             )) {
             // 値をセット
             prestat.setInt(1, id);
             // 問い合わせ実行
@@ -402,15 +387,13 @@ public abstract class Database {
 
         // 該当なし
         if (id == -1) {
-            // 問い合わせクエリを作成
             // INSERT INTO (prefix)account VALUES(null,?,?)
-            StringBuilder sql = new StringBuilder("INSERT INTO ");
-            sql.append(prefix);
-            sql.append("account VALUES(null,?,?)");
 
             // 接続
             try (Connection con = this.getConnection();
-                 PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+                 PreparedStatement prestat = con.prepareStatement(
+                     "INSERT INTO " + prefix + "account VALUES(null,?,?)"
+                 )) {
                 // 値をセット
                 prestat.setString(1, uuid.toString().toLowerCase(Locale.ENGLISH));
                 prestat.setString(2, name);
@@ -436,15 +419,13 @@ public abstract class Database {
             if (id == -1) {
                 return false;
             }
-            // 問い合わせクエリを作成
             // INSERT INTO (prefix)balance VALUES(?,?)
-            StringBuilder sql = new StringBuilder("INSERT INTO ");
-            sql.append(prefix);
-            sql.append("balance VALUES(?,?)");
 
             // 接続
             try (Connection con = this.getConnection();
-                 PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+                 PreparedStatement prestat = con.prepareStatement(
+                     "INSERT INTO " + prefix + "balance VALUES(?,?)"
+                 )) {
                 // 値をセット
                 prestat.setInt(1, id);
                 prestat.setDouble(2, amount);
@@ -497,15 +478,13 @@ public abstract class Database {
             return Reason.ACCOUNT_NOT_FOUND;
         }
 
-        // 問い合わせクエリを作成
         // DELETE FROM (prefix)balance WHERE id=?
-        StringBuilder sql = new StringBuilder("DELETE FROM ");
-        sql.append(prefix);
-        sql.append("balance WHERE id=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "DELETE FROM " + prefix + "balance WHERE id=?"
+             )) {
             // 値をセット
             prestat.setInt(1, id);
 
@@ -539,15 +518,13 @@ public abstract class Database {
         String name = player.getName().toLowerCase(Locale.ENGLISH);
         String oldName = getName(id);
 
-        // 問い合わせクエリを作成
         // UPDATE (prefix)account SET name=? WHERE id=?
-        StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(prefix);
-        sql.append("account SET name=? WHERE id=?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "UPDATE " + prefix + "account SET name=? WHERE id=?"
+             )) {
             // 値をセット
             prestat.setString(1, name);
             prestat.setInt(2, id);
@@ -682,9 +659,8 @@ public abstract class Database {
     /**
      * 指定したプレイヤーのアカウントに入金します。
      *
-     * @param value       確認するアカウント名、もしくはUUID.toString()
-     * @param valueIsUuid UUIDで検索するのであればtrue、名前であればfalse
-     * @param amount      入金する金額
+     * @param id     確認するアカウントID
+     * @param amount 入金する金額
      * @return 入金結果
      */
     private Reason depositPlayer(int id, double amount) {
@@ -725,9 +701,8 @@ public abstract class Database {
     /**
      * 指定したプレイヤーのアカウントから出金します。
      *
-     * @param value       確認するアカウント名、もしくはUUID.toString()
-     * @param valueIsUuid UUIDで検索するのであればtrue、名前であればfalse
-     * @param amount      出金する金額
+     * @param id     確認するアカウントID
+     * @param amount 出金する金額
      * @return 出金結果
      */
     private Reason withdrawPlayer(int id, double amount) {
@@ -809,15 +784,13 @@ public abstract class Database {
         List<Integer> ids = new ArrayList<>();
         Map<Integer, Double> balance = new HashMap<>();
 
-        // 問い合わせクエリ
         // SELECT id,balance FROM (prefix)balance ORDER BY balance DESC LIMIT ?,?;
-        StringBuilder sql = new StringBuilder("SELECT id,balance FROM ");
-        sql.append(prefix);
-        sql.append("balance ORDER BY balance DESC LIMIT ?,?");
 
         // 接続
         try (Connection con = this.getConnection();
-             PreparedStatement prestat = con.prepareStatement(sql.toString())) {
+             PreparedStatement prestat = con.prepareStatement(
+                 "SELECT id,balance FROM " + prefix + "balance ORDER BY balance DESC LIMIT ?,?"
+             )) {
             // 値をセット
             prestat.setInt(1, (page - 1) * 10);
             prestat.setInt(2, config.getTopCommandEntryPerPage());

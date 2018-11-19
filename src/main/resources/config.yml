@@ -60,6 +60,7 @@ Database:
     Name: "jecon"
     User: "root"
     Pass: "your_mysql_password"
+    # Deprecated (It will be deleted in the future)
     Prefix: "jecon_"
     Propaties:
       "useSSL": "false"

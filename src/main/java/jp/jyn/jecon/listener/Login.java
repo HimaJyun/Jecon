@@ -11,23 +11,23 @@ import jp.jyn.jecon.db.Database;
 
 public class Login implements Listener {
 
-	private final Database db;
-	private final ConfigStruct config;
+    private final Database db;
+    private final ConfigStruct config;
 
-	public Login(Jecon jecon) {
-		db = jecon.getDb();
-		config = jecon.getConfigStruct();
+    public Login(Jecon jecon) {
+        db = jecon.getDb();
+        config = jecon.getConfigStruct();
 
-		jecon.getServer().getPluginManager().registerEvents(this, jecon);
-	}
+        jecon.getServer().getPluginManager().registerEvents(this, jecon);
+    }
 
-	@EventHandler(ignoreCancelled = true)
-	public void onJoin(PlayerJoinEvent e) {
-		Player player = e.getPlayer();
-		if (config.isCreateAccountOnJoin() && !db.hasAccount(player)) {
-			db.createPlayerAccount(player);
-		} else {
-			db.nameUpdate(player);
-		}
-	}
+    @EventHandler(ignoreCancelled = true)
+    public void onJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        if (config.isCreateAccountOnJoin() && !db.hasAccount(player)) {
+            db.createPlayerAccount(player);
+        } else {
+            db.nameUpdate(player);
+        }
+    }
 }
