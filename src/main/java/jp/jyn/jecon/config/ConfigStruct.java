@@ -90,6 +90,12 @@ public class ConfigStruct {
         // 設定を取得
         conf = customconfig.getConfig();
 
+        // バージョンがない->1.1.3未満
+        if (!conf.contains("version", true)) {
+            conf.set("version", 1);
+            customconfig.saveConfig();
+        }
+
         // ロード
         createAccountOnJoin = conf.getBoolean("CreateAccountOnJoin", false);
         defaultBalance = conf.getDouble("DefaultBalance", 0);

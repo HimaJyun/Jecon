@@ -90,6 +90,12 @@ public class MessageStruct {
         // 設定を取得
         conf = customconfig.getConfig();
 
+        // バージョンがない->1.1.3未満
+        if (!conf.contains("version", true)) {
+            conf.set("version", 1);
+            customconfig.saveConfig();
+        }
+
         dontHavePermission = customconfig.replaceColor(PREFIX + conf.getString("DontHavePermission"));
         accountNotFount = customconfig.replaceColor(PREFIX + conf.getString("AccountNotFound"));
         invalidAmount = customconfig.replaceColor(PREFIX + conf.getString("InvalidAmount"));
