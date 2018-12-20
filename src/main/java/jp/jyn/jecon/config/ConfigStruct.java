@@ -1,5 +1,6 @@
 package jp.jyn.jecon.config;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -7,26 +8,6 @@ import java.io.File;
 import java.util.Properties;
 
 public class ConfigStruct {
-
-    /*
-     * 　　　■■■■■
-     * 　　　　　　■
-     * 　　　　　　■
-     * 　　　　　　■
-     * 　　　　　　■　　　　■■■　　　　　　■■■　■　　　　■■■　　　　■■　■■■
-     * 　　　　　　■　　　■　　　■　　　　■　　　■■　　　■　　　■　　　　■■　　　■
-     * 　　　　　　■　　■　　　　　■　　■　　　　　■　　■　　　　　■　　　■　　　　■
-     * 　　　　　　■　　■■■■■■■　　■　　　　　　　　■　　　　　■　　　■　　　　■
-     * ■　　　　　■　　■　　　　　　　　■　　　　　　　　■　　　　　■　　　■　　　　■
-     * ■　　　　　■　　■　　　　　　　　■　　　　　　　　■　　　　　■　　　■　　　　■
-     * ■　　　　　■　　■　　　　　■　　■　　　　　■　　■　　　　　■　　　■　　　　■
-     * 　■　　　■　　　　■　　　　■　　　■　　　　■　　　■　　　■　　　　■　　　　■
-     * 　　■■■　　　　　　■■■■　　　　　■■■■　　　　　■■■　　　　■■■　　■■■
-     *
-     * J = Hima[J]yun(and [J]ava...)
-     * econ = [Econ]omy
-     * (61万円1株売りを1円61万株売りにしそうな名前だけど気にしない……)
-     */
 
     /**
      * 設定
@@ -59,6 +40,7 @@ public class ConfigStruct {
     public static final String FORMAT_MACRO_MINOR_CURRENCY = "[%MinorCurrency%]";
 
     private DbConfig dbConfig = null;
+    private CacheConfig cacheConfig = null;
 
     /**
      * 各種設定構造体を初期化します。
@@ -92,7 +74,13 @@ public class ConfigStruct {
 
         // バージョンがない->1.1.3未満
         if (!conf.contains("version", true)) {
-            conf.set("version", 1);
+            conf.set("version", 2);
+            customconfig.saveConfig();
+        } else if (conf.getInt("version") == 1) {
+            // 1 -> 2
+            conf.set("cache.id", -1);
+            conf.set("cache.balance", -1);
+            conf.set("version", 2);
             customconfig.saveConfig();
         }
 
@@ -109,7 +97,8 @@ public class ConfigStruct {
         formatMinorPlural = customconfig.replaceColor(conf.getString("Format.Minor.Plural", ""));
         formatFormat = customconfig.replaceColor(conf.getString("Format.Format", ""));
 
-        dbConfig = new DbConfig();
+        dbConfig = new DbConfig(conf.getConfigurationSection("Database"), plg);
+        cacheConfig = new CacheConfig(conf.getConfigurationSection("cache"));
 
         return this;
     }
@@ -119,31 +108,30 @@ public class ConfigStruct {
      *
      * @author HimaJyun
      */
-    public final class DbConfig {
+    public static final class DbConfig {
         public final boolean isMySQL;
         public final String url;
-        public final String prefix;
+        public final String prefix; // TODO: prefix機能はいらない(文字列連結の無駄遣い)
         public final int poolSize;
         public final long timeout;
         public final Properties propaties = new Properties();
 
-        private DbConfig() {
+        private DbConfig(ConfigurationSection conf, Plugin plugin) {
             String tmp = "jdbc:";
-            if (conf.getString("Database.Type", "sqlite").equalsIgnoreCase("mysql")) {
+            if (conf.getString("Type", "sqlite").equalsIgnoreCase("mysql")) {
                 isMySQL = true;
                 // mysql://localhost:3306/jecon
                 tmp += "mysql://"
-                       + conf.getString("Database.MySQL.Host", "localhost:3306")
-                       + "/"
-                       + conf.getString("Database.MySQL.Name", "jecon");
-                propaties.put("user", conf.getString("Database.MySQL.User", "root"));
-                propaties.put("password", conf.getString("Database.MySQL.Pass"));
-                prefix = conf.getString("Database.MySQL.Prefix", "jecon_");
+                    + conf.getString("MySQL.Host", "localhost:3306")
+                    + "/"
+                    + conf.getString("MySQL.Name", "jecon");
+                propaties.put("user", conf.getString("MySQL.User", "root"));
+                propaties.put("password", conf.getString("MySQL.Pass"));
+                prefix = conf.getString("MySQL.Prefix", "jecon_");
             } else {
                 isMySQL = false;
                 // sqlite:plugins/Jecon/jecon.db
-                File tmpFile = new File(plg.getDataFolder(),
-                    conf.getString("Database.SQLite.File", "jecon.db"));
+                File tmpFile = new File(plugin.getDataFolder(), conf.getString("SQLite.File", "jecon.db"));
                 tmpFile.getParentFile().mkdirs();
                 // URL
                 tmp += "sqlite:" + tmpFile.getPath();
@@ -152,7 +140,7 @@ public class ConfigStruct {
             // 共通設定
             url = tmp;
             // プロパティ取得
-            tmp = "Database." + (isMySQL ? "MySQL" : "SQLite") + ".Propaties";
+            tmp = (isMySQL ? "MySQL" : "SQLite") + ".Propaties";
             if (conf.contains(tmp)) {
                 for (String key : conf.getConfigurationSection(tmp).getKeys(false)) {
                     propaties.put(key, conf.getString(tmp + "." + key));
@@ -160,8 +148,18 @@ public class ConfigStruct {
             }
 
             // パフォーマンス周り
-            poolSize = conf.getInt("Database.Poolsize", -1);
-            timeout = conf.getLong("Database.Timeout", -1);
+            poolSize = conf.getInt("Poolsize", -1);
+            timeout = conf.getLong("Timeout", -1);
+        }
+    }
+
+    public static final class CacheConfig {
+        public final int id;
+        public final int balance;
+
+        public CacheConfig(ConfigurationSection conf) {
+            id = conf.getInt("id");
+            balance = conf.getInt("balance");
         }
     }
 
@@ -262,5 +260,9 @@ public class ConfigStruct {
      */
     public DbConfig getDbConfig() {
         return dbConfig;
+    }
+
+    public CacheConfig getCacheConfig() {
+        return cacheConfig;
     }
 }

@@ -3,6 +3,7 @@ package jp.jyn.jecon.db;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jp.jyn.jecon.Jecon;
+import jp.jyn.jecon.cache.CacheFactory;
 import jp.jyn.jecon.config.ConfigStruct;
 import org.bukkit.OfflinePlayer;
 
@@ -31,6 +32,9 @@ public abstract class Database {
     // ====================
     // | ID | balance |
     // ================
+    // TODO: UUIDベースの処理に書き換える(nameベースの処理はもはや時代遅れ)
+    // TODO: マルチスレッドに対応したい
+    // TODO: 全体的にひどい
 
     public enum Reason {
         ACCOUNT_NOT_FOUND, NOT_ENOUGH, SUCCESS, UNKNOWN_ERROR,
@@ -48,9 +52,9 @@ public abstract class Database {
     protected String prefix = "";
 
     // キャッシュ
-    private final Map<UUID, Integer> uuidCache = new HashMap<>();
-    private final Map<String, Integer> nameCache = new HashMap<>();
-    private final Map<Integer, Double> balanceCache = new HashMap<>();
+    private Map<UUID, Integer> uuidCache;
+    private Map<String, Integer> nameCache;
+    private Map<Integer, Double> balanceCache;
 
     protected void setup(Jecon jecon, HikariConfig hikariConfig) {
         this.jecon = jecon;
@@ -58,6 +62,10 @@ public abstract class Database {
             config = jecon.getConfigStruct();
         }
         this.prefix = config.getDbConfig().prefix;
+
+        uuidCache = CacheFactory.createCache(config.getCacheConfig().id);
+        nameCache = CacheFactory.createCache(config.getCacheConfig().id);
+        balanceCache = CacheFactory.createCache(config.getCacheConfig().balance);
 
         hikariConfig.setJdbcUrl(config.getDbConfig().url);
         hikariConfig.setAutoCommit(true);
@@ -81,12 +89,12 @@ public abstract class Database {
              Statement statement = connection.createStatement()) {
             statement.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS `meta` (" +
-                "   `key` TEXT," +
-                "   `value` TEXT" +
-                ")"
+                    "   `key` TEXT," +
+                    "   `value` TEXT" +
+                    ")"
             );
 
-            try (ResultSet resultSet = statement.executeQuery("SELECT `value` FROM `meta` WHERE key='dbversion'")) {
+            try (ResultSet resultSet = statement.executeQuery("SELECT `value` FROM `meta` WHERE `key`='dbversion'")) {
                 if (resultSet.next()) {
                     if (!resultSet.getString("value").equals("1")) {
                         throw new RuntimeException("An incompatible change was made (database can not be downgraded)");

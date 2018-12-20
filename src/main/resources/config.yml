@@ -66,5 +66,12 @@ Database:
       "useSSL": "false"
       "useServerPrepStmts": "true"
 
+cache:
+  # +n == The specified number is stored in the LRU cache(memory saving)
+  # -1 == Infinity(fast)
+  #  0 == Disable(When using from multiple servers)
+  id: -1
+  balance: -1
+
 # Don't touch
-version: 1
+version: 2
