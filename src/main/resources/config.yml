@@ -1,70 +1,53 @@
-# UTF-8 require.
+# Check new version.
+versionCheck: true
 
-CreateAccountOnJoin: true
+defaultBalance: 10000.0
+createAccountOnJoin: true
 
-DefaultBalance: 10000.0
+format:
+    singularMajorSingularMinor: "{major} dollar {minor} cent"
+    singularMajorPluralMinor: "{major} dollar {minor} cents"
+    pluralMajorSingularMinor: "{major} dollars {minor} cent"
+    pluralMajorPluralMinor: "{major} dollars {minor} cents"
+    singleMajorZeroMinor: "{major} dollar"
+    pluralMajorZeroMinor: "{major} dollars"
 
-TopCommandEntryPerPage: 10
-
-Format:
-    MergeSpace: true
-    Trim: true
-    Major:
-        Single: "dollar"
-        Plural: "dollars"
-    Minor:
-        Single: "cent"
-        Plural: "cents"
-    Format: "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]"
-# Format macro(Example: 123.45)
-# [%Major%]->123
-# [%Minor%]->45
-# [%All%]->123.45
-# [%MajorCurrency%]->Major currency.
-# [%MinorCurrency%]->Minor currency.
-# Format example:
-#   "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]":
-#     123.45->123 dollars 45 cents
-#     1.35->1 dollar 35 cents
-#   "[%Major%] YEN":
-#     123.45->123 YEN
-#     1.35->1 YEN
-#   "$[%All%]":
-#     123.45->$123.45
-#     1.35->$1.35
-
-# Info: What is MergeSpace?
-# Summarizes the consecutive space.
-# [%Minor%] and [%MinorCurrency%] will be replaced in the blank in the case of a 0.
-# Example(amount:1.0,Format:"[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]")
-#   MergeSpace: false -> [1 doller  ]
-#   MergeSpace: true  -> [1 doller ]
-#
-# Info: What is Trim?
-# Remove the first and last space.
-# [1 doller ]
-#   Trim: false -> [1 doller ]
-#   Trim: true  -> [1 doller]
-
-Database:
-    # If it is less than 1, the default value is used.(default:10)
-    Poolsize: -1
-    # Timeout in milliseconds.(default:600000(10 minutes))
-    Timeout: -1
+database:
     # Database type. (sqlite/mysql)
-    Type: sqlite
-    SQLite:
-        File: "jecon.db"
-    MySQL:
-        Host: "localhost:3306"
-        Name: "jecon"
-        User: "root"
-        Pass: "your_mysql_password"
-        # Deprecated (It will be deleted in the future)
-        Prefix: "jecon_"
-        Propaties:
+    type: sqlite
+    sqlite:
+        file: "jecon.db"
+    mysql:
+        host: "localhost:3306"
+        name: "jecon"
+        username: "root"
+        password: "your_mysql_password"
+        # It is recommended to stop caching when using MySQL
+        # If you have caches in your application, database cache is "wasted memory".
+        init: "SET SESSION query_cache_type=0"
+        properties:
             "useSSL": "false"
-            "useServerPrepStmts": "true"
+            # encoding
+            #"useUnicode": "true"
+            #"characterEncoding": "UTF-8"
+            #"characterSetResults": "UTF-8"
+            # performance
+            "maintainTimeStats": "false"
+            "elideSetAutoCommits": "true"
+            "useLocalSessionState": "true"
+            "alwaysSendSetIsolation": "false"
+            "cacheServerConfiguration": "true"
+            "cachePrepStmts": "true"
+            "prepStmtCacheSize": "250"
+            "prepStmtCacheSqlLimit": "2048"
+            #"useServerPrepStmts": "true"
+    connectionPool:
+        # -1 is default
+        maximumPoolSize: -1
+        minimumIdle: -1
+        maxLifetime: -1
+        connectionTimeout: -1
+        idleTimeout: -1
 
 cache:
     # +n == The specified number is stored in the LRU cache(memory saving)
@@ -74,4 +57,4 @@ cache:
     balance: -1
 
 # Don't touch
-version: 2
+version: 3

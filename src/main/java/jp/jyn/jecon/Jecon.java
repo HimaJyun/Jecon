@@ -1,5 +1,6 @@
 package jp.jyn.jecon;
 
+import jp.jyn.jecon.config.ConfigLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayDeque;
@@ -7,6 +8,8 @@ import java.util.Deque;
 
 public class Jecon extends JavaPlugin {
     private static Jecon instance = null;
+
+    private ConfigLoader config;
 
     // Stack(LIFO)
     private final Deque<Runnable> destructor = new ArrayDeque<>();
@@ -18,6 +21,12 @@ public class Jecon extends JavaPlugin {
     public void onEnable() {
         instance = this;
         destructor.clear();
+
+        if (config == null) {
+            config = new ConfigLoader();
+        }
+        config.reloadConfig();
+
     }
 
     @Override
