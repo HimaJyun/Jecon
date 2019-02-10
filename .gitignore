@@ -25,7 +25,7 @@ hs_err_pid*
 ### Maven ###
 /target/
 /dependency-reduced-pom.xml
-/mvn-repo/
+/mvn-repo
 
 ### IDEA ###
 .idea/
