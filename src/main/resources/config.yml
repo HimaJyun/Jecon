@@ -7,15 +7,15 @@ DefaultBalance: 10000.0
 TopCommandEntryPerPage: 10
 
 Format:
-  MergeSpace: true
-  Trim: true
-  Major:
-    Single: "dollar"
-    Plural: "dollars"
-  Minor:
-    Single: "cent"
-    Plural: "cents"
-  Format: "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]"
+    MergeSpace: true
+    Trim: true
+    Major:
+        Single: "dollar"
+        Plural: "dollars"
+    Minor:
+        Single: "cent"
+        Plural: "cents"
+    Format: "[%Major%] [%MajorCurrency%] [%Minor%] [%MinorCurrency%]"
 # Format macro(Example: 123.45)
 # [%Major%]->123
 # [%Minor%]->45
@@ -47,31 +47,31 @@ Format:
 #   Trim: true  -> [1 doller]
 
 Database:
-  # If it is less than 1, the default value is used.(default:10)
-  Poolsize: -1
-  # Timeout in milliseconds.(default:600000(10 minutes))
-  Timeout: -1
-  # Database type. (sqlite/mysql)
-  Type: sqlite
-  SQLite:
-    File: "jecon.db"
-  MySQL:
-    Host: "localhost:3306"
-    Name: "jecon"
-    User: "root"
-    Pass: "your_mysql_password"
-    # Deprecated (It will be deleted in the future)
-    Prefix: "jecon_"
-    Propaties:
-      "useSSL": "false"
-      "useServerPrepStmts": "true"
+    # If it is less than 1, the default value is used.(default:10)
+    Poolsize: -1
+    # Timeout in milliseconds.(default:600000(10 minutes))
+    Timeout: -1
+    # Database type. (sqlite/mysql)
+    Type: sqlite
+    SQLite:
+        File: "jecon.db"
+    MySQL:
+        Host: "localhost:3306"
+        Name: "jecon"
+        User: "root"
+        Pass: "your_mysql_password"
+        # Deprecated (It will be deleted in the future)
+        Prefix: "jecon_"
+        Propaties:
+            "useSSL": "false"
+            "useServerPrepStmts": "true"
 
 cache:
-  # +n == The specified number is stored in the LRU cache(memory saving)
-  # -1 == Infinity(fast)
-  #  0 == Disable(When using from multiple servers)
-  id: -1
-  balance: -1
+    # +n == The specified number is stored in the LRU cache(memory saving)
+    # -1 == Infinity(fast)
+    #  0 == Disable(When using from multiple servers)
+    id: -1
+    balance: -1
 
 # Don't touch
 version: 2
