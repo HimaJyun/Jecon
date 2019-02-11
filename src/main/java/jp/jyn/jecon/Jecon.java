@@ -1,6 +1,8 @@
 package jp.jyn.jecon;
 
 import jp.jyn.jecon.config.ConfigLoader;
+import jp.jyn.jecon.config.MainConfig;
+import jp.jyn.jecon.db.Database;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayDeque;
@@ -26,7 +28,10 @@ public class Jecon extends JavaPlugin {
             config = new ConfigLoader();
         }
         config.reloadConfig();
+        MainConfig main = config.getMainConfig();
 
+        Database db = Database.connect(main.database);
+        destructor.addFirst(db::close);
     }
 
     @Override
