@@ -59,12 +59,11 @@ public class MainMigration {
         config.set("TopCommandEntryPerPage", null);
         // "Format" can not be automatically migrated.
         config.set("Format", null);
-        config.set("format.singularMajorSingularMinor", "{major} dollar {minor} cent");
-        config.set("format.singularMajorPluralMinor", "{major} dollar {minor} cents");
-        config.set("format.pluralMajorSingularMinor", "{major} dollars {minor} cent");
-        config.set("format.pluralMajorPluralMinor", "{major} dollars {minor} cents");
-        config.set("format.singleMajorZeroMinor", "{major} dollar");
-        config.set("format.pluralMajorZeroMinor", "{major} dollars");
+        config.set("format.singularMajor", "dollar");
+        config.set("format.pluralMajor", "dollars");
+        config.set("format.singularMinor", "cent");
+        config.set("format.pluralMinor", "cents");
+        config.set("format.format", "{major} {majorcurrency} {minor} {minorcurrency}");
         // database
         move(config, "Database.Type", "database.type");
         move(config, "Database.SQLite.File", "database.sqlite.file");

@@ -34,20 +34,24 @@ public class MainConfig {
     }
 
     public final static class FormatConfig {
-        public final TemplateParser singularMajorSingularMinor;
-        public final TemplateParser singularMajorPluralMinor;
-        public final TemplateParser pluralMajorSingularMinor;
-        public final TemplateParser pluralMajorPluralMinor;
-        public final TemplateParser singleMajorZeroMinor;
-        public final TemplateParser pluralMajorZeroMinor;
+        public final String singularMajor;
+        public final String pluralMajor;
+        public final String singularMinor;
+        public final String pluralMinor;
+        public final TemplateParser format;
+        public final TemplateParser formatZeroMinor;
 
         private FormatConfig(ConfigurationSection config) {
-            singularMajorSingularMinor = StringParser.parse(config.getString("singularMajorSingularMinor"));
-            singularMajorPluralMinor = StringParser.parse(config.getString("singularMajorPluralMinor"));
-            pluralMajorSingularMinor = StringParser.parse(config.getString("pluralMajorSingularMinor"));
-            pluralMajorPluralMinor = StringParser.parse(config.getString("pluralMajorPluralMinor"));
-            singleMajorZeroMinor = StringParser.parse(config.getString("singleMajorZeroMinor"));
-            pluralMajorZeroMinor = StringParser.parse(config.getString("pluralMajorZeroMinor"));
+            singularMajor = config.getString("singularMajor");
+            pluralMajor = config.getString("pluralMajor");
+            singularMinor = config.getString("singularMinor");
+            pluralMinor = config.getString("pluralMinor");
+            format = StringParser.parse(config.getString("format"));
+            if (config.contains("formatZeroMinor")) {
+                formatZeroMinor = StringParser.parse(config.getString("formatZeroMinor"));
+            } else {
+                formatZeroMinor = format;
+            }
         }
     }
 

@@ -5,12 +5,16 @@ defaultBalance: 10000.0
 createAccountOnJoin: true
 
 format:
-    singularMajorSingularMinor: "{major} dollar {minor} cent"
-    singularMajorPluralMinor: "{major} dollar {minor} cents"
-    pluralMajorSingularMinor: "{major} dollars {minor} cent"
-    pluralMajorPluralMinor: "{major} dollars {minor} cents"
-    singleMajorZeroMinor: "{major} dollar"
-    pluralMajorZeroMinor: "{major} dollars"
+    singularMajor: "dollar"
+    pluralMajor: "dollars"
+    singularMinor: "cent"
+    pluralMinor: "cents"
+    format: "{major} {majorcurrency} {minor} {minorcurrency}"
+    # Optional
+    #formatZeroMinor: "{major} {majorcurrency}"
+    # Example:
+    #format: "$ {major}.{minor}"
+    #format: "{major}円"
 
 database:
     # Database type. (sqlite/mysql)
