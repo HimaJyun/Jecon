@@ -3,11 +3,6 @@ package jp.jyn.jecon.config.migration;
 import jp.jyn.jecon.Jecon;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.logging.Logger;
 
 public class MainMigration {
@@ -16,6 +11,7 @@ public class MainMigration {
 
     private MainMigration() {}
 
+    @SuppressWarnings("Duplicates")
     public static boolean migration(ConfigurationSection config) {
         int version = config.getInt("version", -1);
         if (version == CURRENT_VERSION) {
@@ -24,12 +20,7 @@ public class MainMigration {
         Logger logger = Jecon.getInstance().getLogger();
         logger.info("Migrate " + FILE);
 
-        Path data = Jecon.getInstance().getDataFolder().toPath();
-        try {
-            Files.copy(data.resolve(FILE), data.resolve("config.old.yml"), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        MigrationUtils.copy(FILE, "config.old.yml");
 
         switch (version) {
             case 1:

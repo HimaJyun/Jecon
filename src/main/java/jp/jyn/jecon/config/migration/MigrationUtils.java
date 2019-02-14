@@ -1,7 +1,14 @@
 package jp.jyn.jecon.config.migration;
 
 import jp.jyn.jbukkitlib.util.PackagePrivate;
+import jp.jyn.jecon.Jecon;
 import org.bukkit.configuration.ConfigurationSection;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 @PackagePrivate
 class MigrationUtils {
@@ -19,5 +26,15 @@ class MigrationUtils {
         Object old = config.get(oldKey);
         config.set(oldKey, null);
         config.set(newKey, old);
+    }
+
+    @PackagePrivate
+    static void copy(String from,String to) {
+        Path data = Jecon.getInstance().getDataFolder().toPath();
+        try {
+            Files.copy(data.resolve(from), data.resolve(to), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

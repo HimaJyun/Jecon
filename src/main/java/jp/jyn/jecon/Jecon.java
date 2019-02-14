@@ -3,6 +3,7 @@ package jp.jyn.jecon;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import jp.jyn.jecon.config.ConfigLoader;
 import jp.jyn.jecon.config.MainConfig;
+import jp.jyn.jecon.config.MessageConfig;
 import jp.jyn.jecon.db.Database;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
@@ -34,6 +35,7 @@ public class Jecon extends JavaPlugin {
         }
         config.reloadConfig();
         MainConfig main = config.getMainConfig();
+        MessageConfig message = config.getMessageConfig();
 
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 
