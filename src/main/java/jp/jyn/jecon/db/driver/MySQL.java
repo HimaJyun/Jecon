@@ -29,7 +29,7 @@ public class MySQL extends Database {
             statement.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS `balance` (" +
                     "`id`      INT    UNSIGNED NOT NULL  PRIMARY KEY," +
-                    "`balance` BIGINT UNSIGNED NOT NULL " +
+                    "`balance` BIGINT NOT NULL " +
                     ")"
             );
         } catch (SQLException e) {

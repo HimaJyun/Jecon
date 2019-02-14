@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -121,7 +122,7 @@ public abstract class Database {
         throw new RuntimeException("The ID could not be issued.");
     }
 
-    public long getBalance(int id) {
+    public OptionalLong getBalance(int id) {
         try (Connection connection = hikari.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                  "SELECT `balance` FROM `balance` WHERE `id`=?"
@@ -129,49 +130,24 @@ public abstract class Database {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getLong(1);
+                    return OptionalLong.of(resultSet.getLong(1));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return -1;
+        return OptionalLong.empty();
     }
 
     public boolean createAccount(int id, long balance) {
-        try (Connection connection = hikari.getConnection()) {
-            try {
-                connection.setAutoCommit(false);
-                // check
-                try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT `balance` FROM `balance` WHERE `id`=?"
-                )) {
-                    statement.setInt(1, id);
-                    try (ResultSet resultSet = statement.executeQuery()) {
-                        if (resultSet.next()) {
-                            connection.commit();
-                            return false;
-                        }
-                    }
-                }
-
-                // insert
-                try (PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO `balance` VALUES(?,?)"
-                )) {
-                    statement.setInt(1, id);
-                    statement.setLong(2, balance);
-                    if (statement.executeUpdate() != 0) {
-                        connection.commit();
-                        return true;
-                    }
-                }
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-                throw e;
-            } finally {
-                connection.setAutoCommit(true);
+        try (Connection connection = hikari.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                 "INSERT INTO `balance` VALUES(?,?)"
+             )) {
+            statement.setInt(1, id);
+            statement.setLong(2, balance);
+            if (statement.executeUpdate() != 0) {
+                return true;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -215,10 +191,5 @@ public abstract class Database {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public boolean withdraw(int id, long amount) {
-        // withdraw == negative deposit
-        return deposit(id, -amount);
     }
 }
