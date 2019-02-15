@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.UUID;
 
-@PackagePrivate class VaultEconomy implements Economy {
+@PackagePrivate
+class VaultEconomy implements Economy {
     private final UUIDRegistry registry;
     private final MainConfig config;
     private final BalanceRepository repository;
@@ -150,13 +151,10 @@ import java.util.UUID;
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot withdraw negative funds");
         }
 
-        switch (repository.withdraw(uuid, value)) {
-            case SUCCESS:
-                return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
-            default:
-                return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Unknown error");
+        if (repository.withdraw(uuid, value)) {
+            return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
         }
     }
 
@@ -187,13 +185,10 @@ import java.util.UUID;
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot deposit negative funds");
         }
 
-        switch (repository.deposit(uuid, value)) {
-            case SUCCESS:
-                return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
-            default:
-                return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Unknown error");
+        if (repository.deposit(uuid, value)) {
+            return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
         }
     }
 
