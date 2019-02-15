@@ -48,7 +48,7 @@ Economy base plugin for Bukkit/Spigot
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>Jecon</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>

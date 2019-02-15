@@ -33,7 +33,7 @@ class CommandUtils {
         return Bukkit.getOnlinePlayers()
             .stream()
             .map(HumanEntity::getName)
-            .filter(str -> str.startsWith(args.removeFirst()))
+            .filter(str -> str.startsWith(args.getFirst()))
             .collect(Collectors.toList());
     }
 }
