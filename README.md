@@ -22,7 +22,7 @@ Economy base plugin for Bukkit/Spigot
 |Command|Permission|Description|Default|
 |:------|:---------|:----------|:------|
 |/money|jecon.show|Show your balance.|ALL|
-|/money [player]|jecon.show.other|Show [player] balance.|OP|
+|/money show [player]|jecon.show.other|Show [player] balance.|OP|
 |/money pay &lt;player&gt; &lt;amount&gt;|jecon.pay|Send &lt;amount&gt; to &lt;player&gt;.|ALL|
 |/money set &lt;player&gt; &lt;balance&gt;|jecon.set|Set the balance of &lt;player&gt; to &lt;balance&gt;.|OP|
 |/money give &lt;player&gt; &lt;amount&gt;|jecon.give|Give &lt;amount&gt; to &lt;player&gt;.|OP|
