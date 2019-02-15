@@ -1,323 +1,287 @@
 package jp.jyn.jecon;
 
-import jp.jyn.jecon.config.ConfigStruct;
-import jp.jyn.jecon.db.Database;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
+import jp.jyn.jecon.config.MainConfig;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-import net.milkbowl.vault.economy.EconomyResponse.ResponseType;
 import org.bukkit.OfflinePlayer;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.UUID;
 
-public class VaultEconomy implements Economy {
+@PackagePrivate
+class VaultEconomy implements Economy {
+    private final UUIDRegistry registry;
+    private final MainConfig config;
+    private final BalanceRepository repository;
 
-    // メインクラスのインスタンス
-    private final Jecon jecon;
-    // データベースのインスタンス
-    private final Database db;
-    // 設定
-    private final ConfigStruct config;
-
-    public VaultEconomy(Jecon jecon) {
-        this.jecon = jecon;
-
-        config = jecon.getConfigStruct();
-        db = jecon.getDb();
-
-        jecon.getLogger().info("Vault economy hooked.");
+    @PackagePrivate
+    VaultEconomy(UUIDRegistry registry, MainConfig config, BalanceRepository repository) {
+        this.registry = registry;
+        this.config = config;
+        this.repository = repository;
     }
-
-    // ======== isEnabled ========
 
     @Override
     public boolean isEnabled() {
-        return jecon.isSetupSuccess();
+        return true;
     }
-
-    // ======== getName ========
 
     @Override
     public String getName() {
         return "Jecon";
     }
 
-    // ======== format ========
-
-    @Override
-    public String format(double amount) {
-        return db.format(amount);
-    }
-
-    // ======== fractionalDigits ========
-
     @Override
     public int fractionalDigits() {
-        return -1;
+        /* Hint: How does Jecon keep decimals?
+            Jecon multiplies the value up to two decimal places by 100 times and treats it.
+            (This is the same mechanism as Raspberry Pi CPU temperature, It can be obtained from /sys/class/thermal/thermal_zone0/temp)
+            In general, the value below the decimal point of the currency is 1/100 (cent, JPY '銭', etc.)
+
+            Of course, it is also possible to make it more accurate. (However, in that case, the maximum value decreases)
+            If you want it please post Issue.
+         */
+        return BalanceRepository.FRACTIONAL_DIGITS;
     }
 
-    // ======== currencyNamePlural ========
+    @Override
+    public String format(double v) {
+        return repository.format(v);
+    }
 
     @Override
     public String currencyNamePlural() {
-        return config.getFormatMajorPlural();
+        return config.format.pluralMajor;
     }
-
-    // ======== currencyNameSingular ========
 
     @Override
     public String currencyNameSingular() {
-        return config.getFormatMajorSingle();
-    }
-
-    // ======== createPlayerAccount ========
-
-    @Override
-    public boolean createPlayerAccount(String playerName) {
-        return db.createPlayerAccount(playerName);
+        return config.format.singularMajor;
     }
 
     @Override
-    public boolean createPlayerAccount(OfflinePlayer player) {
-        return db.createPlayerAccount(player);
+    public boolean hasAccount(String s) {
+        return registry.getUUID(s).map(repository::hasAccount).orElse(false);
     }
 
     @Override
-    public boolean createPlayerAccount(String playerName, String worldName) {
-        return createPlayerAccount(playerName);
+    public boolean hasAccount(OfflinePlayer offlinePlayer) {
+        return repository.hasAccount(offlinePlayer.getUniqueId());
     }
 
     @Override
-    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
-        return createPlayerAccount(player);
+    public boolean hasAccount(String s, String s1) {
+        return hasAccount(s);
     }
 
-    // ======== depositPlayer ========
+    @Override
+    public boolean hasAccount(OfflinePlayer offlinePlayer, String s) {
+        return hasAccount(offlinePlayer);
+    }
 
     @Override
-    public EconomyResponse depositPlayer(String playerName, double amount) {
-        if (amount < 0) {
-            return new EconomyResponse(0, 0, ResponseType.FAILURE, "Can't deposit negative amount");
+    public double getBalance(String s) {
+        return registry.getUUID(s)
+            .map(repository::getDouble)
+            .orElse(OptionalDouble.empty())
+            .orElse(0);
+    }
+
+    @Override
+    public double getBalance(OfflinePlayer offlinePlayer) {
+        return repository.getDouble(offlinePlayer.getUniqueId()).orElse(0);
+    }
+
+    @Override
+    public double getBalance(String s, String s1) {
+        return getBalance(s);
+    }
+
+    @Override
+    public double getBalance(OfflinePlayer offlinePlayer, String s) {
+        return getBalance(offlinePlayer);
+    }
+
+    @Override
+    public boolean has(String s, double v) {
+        return registry.getUUID(s).map(uuid -> repository.has(uuid, v)).orElse(false);
+    }
+
+    @Override
+    public boolean has(OfflinePlayer offlinePlayer, double v) {
+        return repository.has(offlinePlayer.getUniqueId(), v);
+    }
+
+    @Override
+    public boolean has(String s, String s1, double v) {
+        return has(s, v);
+    }
+
+    @Override
+    public boolean has(OfflinePlayer offlinePlayer, String s, double v) {
+        return has(offlinePlayer, v);
+    }
+
+    @Override
+    public boolean createPlayerAccount(String s) {
+        return registry.getUUID(s).map(uuid -> repository.createAccount(uuid, repository.defaultBalance)).orElse(false);
+    }
+
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer offlinePlayer) {
+        return repository.createAccount(offlinePlayer.getUniqueId(), repository.defaultBalance);
+    }
+
+    @Override
+    public boolean createPlayerAccount(String s, String s1) {
+        return createPlayerAccount(s);
+    }
+
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer offlinePlayer, String s) {
+        return createPlayerAccount(offlinePlayer);
+    }
+
+    private EconomyResponse withdrawPlayer(UUID uuid, double value) {
+        if (value < 0) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot withdraw negative funds");
         }
-        switch (db.depositPlayer(playerName, amount)) {
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Account not found");
-            case SUCCESS:
-                return new EconomyResponse(amount, db.getBalance(playerName), ResponseType.SUCCESS, "");
-            default:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Unknown error");
-        }
-    }
 
-    @Override
-    public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        if (amount < 0) {
-            return new EconomyResponse(0, 0, ResponseType.FAILURE, "Can't deposit negative amount");
-        }
-        switch (db.depositPlayer(player, amount)) {
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Account not found");
-            case SUCCESS:
-                return new EconomyResponse(amount, db.getBalance(player), ResponseType.SUCCESS, "");
-            default:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Unknown error");
-        }
-    }
-
-    @Override
-    public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
-        return depositPlayer(playerName, amount);
-    }
-
-    @Override
-    public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
-        return depositPlayer(player, amount);
-    }
-
-    // ======== getBalance ========
-
-    @Override
-    public double getBalance(String playerName) {
-        return db.getBalance(playerName);
-    }
-
-    @Override
-    public double getBalance(OfflinePlayer player) {
-        return db.getBalance(player);
-    }
-
-    @Override
-    public double getBalance(String playerName, String world) {
-        return getBalance(playerName);
-    }
-
-    @Override
-    public double getBalance(OfflinePlayer player, String world) {
-        return getBalance(player);
-    }
-
-    // ======== has ========
-
-    @Override
-    public boolean has(String playerName, double amount) {
-        return db.has(playerName, amount);
-    }
-
-    @Override
-    public boolean has(OfflinePlayer player, double amount) {
-        return db.has(player, amount);
-    }
-
-    @Override
-    public boolean has(String playerName, String worldName, double amount) {
-        return has(playerName, amount);
-    }
-
-    @Override
-    public boolean has(OfflinePlayer player, String worldName, double amount) {
-        return has(player, amount);
-    }
-
-    // ======== hasAccount ========
-
-    @Override
-    public boolean hasAccount(String playerName) {
-        return db.hasAccount(playerName);
-    }
-
-    @Override
-    public boolean hasAccount(OfflinePlayer player) {
-        return db.hasAccount(player);
-    }
-
-    @Override
-    public boolean hasAccount(String playerName, String worldName) {
-        return hasAccount(playerName);
-    }
-
-    @Override
-    public boolean hasAccount(OfflinePlayer player, String worldName) {
-        return hasAccount(player);
-    }
-
-    // ======== withdrawPlayer ========
-
-    @Override
-    public EconomyResponse withdrawPlayer(String playerName, double amount) {
-        if (amount < 0) {
-            return new EconomyResponse(0, 0, ResponseType.FAILURE, "Can't deposit negative amount");
-        }
-        switch (db.withdrawPlayer(playerName, amount)) {
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Account not found");
-            case NOT_ENOUGH:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Money is not enough");
-            case SUCCESS:
-                return new EconomyResponse(amount, db.getBalance(playerName), ResponseType.SUCCESS, "");
-            default:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Unknown error");
+        if (repository.withdraw(uuid, value)) {
+            return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
         }
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        if (amount < 0) {
-            return new EconomyResponse(0, 0, ResponseType.FAILURE, "Can't deposit negative amount");
+    public EconomyResponse withdrawPlayer(String s, double v) {
+        return registry.getUUID(s)
+            .map(uuid -> withdrawPlayer(uuid, v))
+            .orElseGet(() -> new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "User does not exist"));
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(OfflinePlayer offlinePlayer, double v) {
+        return withdrawPlayer(offlinePlayer.getUniqueId(), v);
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(String s, String s1, double v) {
+        return withdrawPlayer(s, v);
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(OfflinePlayer offlinePlayer, String s, double v) {
+        return withdrawPlayer(offlinePlayer, v);
+    }
+
+    private EconomyResponse depositPlayer(UUID uuid, double value) {
+        if (value < 0) {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot deposit negative funds");
         }
-        switch (db.withdrawPlayer(player, amount)) {
-            case ACCOUNT_NOT_FOUND:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Account not found");
-            case NOT_ENOUGH:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Money is not enough");
-            case SUCCESS:
-                return new EconomyResponse(amount, db.getBalance(player), ResponseType.SUCCESS, "");
-            default:
-                return new EconomyResponse(0, 0, ResponseType.FAILURE, "Unknown error");
+
+        if (repository.deposit(uuid, value)) {
+            return new EconomyResponse(0, repository.getDouble(uuid).orElse(0), EconomyResponse.ResponseType.SUCCESS, "OK");
+        } else {
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account does not exist");
         }
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
-        return withdrawPlayer(playerName, amount);
+    public EconomyResponse depositPlayer(String s, double v) {
+        return registry.getUUID(s)
+            .map(uuid -> depositPlayer(uuid, v))
+            .orElseGet(() -> new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "User does not exist"));
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
-        return withdrawPlayer(player, amount);
+    public EconomyResponse depositPlayer(OfflinePlayer offlinePlayer, double v) {
+        return depositPlayer(offlinePlayer.getUniqueId(), v);
     }
 
-    // ==========================
-    //  銀行機能はサポートしない
-    // ==========================
+    @Override
+    public EconomyResponse depositPlayer(String s, String s1, double v) {
+        return depositPlayer(s, v);
+    }
 
+    @Override
+    public EconomyResponse depositPlayer(OfflinePlayer offlinePlayer, String s, double v) {
+        return depositPlayer(offlinePlayer, v);
+    }
+
+    // region bank
     @Override
     public boolean hasBankSupport() {
-        // 銀行機能はないため常時false
         return false;
     }
 
     @Override
+    public EconomyResponse createBank(String s, String s1) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse createBank(String s, OfflinePlayer offlinePlayer) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse deleteBank(String s) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse bankBalance(String s) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse bankHas(String s, double v) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse bankWithdraw(String s, double v) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse bankDeposit(String s, double v) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse isBankOwner(String s, String s1) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse isBankOwner(String s, OfflinePlayer offlinePlayer) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse isBankMember(String s, String s1) {
+        return notImplementedBank();
+    }
+
+    @Override
+    public EconomyResponse isBankMember(String s, OfflinePlayer offlinePlayer) {
+        return notImplementedBank();
+    }
+
+    @Override
     public List<String> getBanks() {
-        // 銀行機能はないため常時空リスト
         return Collections.emptyList();
     }
 
-    @Override
-    public EconomyResponse createBank(String name, String player) {
-        return notImplementedBank();
+    private static EconomyResponse notImplementedBank() {
+        return new EconomyResponse(0, 0, EconomyResponse.ResponseType.NOT_IMPLEMENTED, "Jecon does not support bank.");
     }
-
-    @Override
-    public EconomyResponse createBank(String name, OfflinePlayer offlinePlayer) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse deleteBank(String name) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse bankHas(String name, double amount) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse bankWithdraw(String name, double amount) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse bankDeposit(String name, double amount) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse isBankOwner(String name, String playerName) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse isBankOwner(String name, OfflinePlayer offlinePlayer) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse isBankMember(String name, String playerName) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse isBankMember(String name, OfflinePlayer offlinePlayer) {
-        return notImplementedBank();
-    }
-
-    @Override
-    public EconomyResponse bankBalance(String name) {
-        return notImplementedBank();
-    }
-
-    private EconomyResponse notImplementedBank() {
-        return new EconomyResponse(0, 0, ResponseType.NOT_IMPLEMENTED, "Jecon does not support bank.");
-    }
+    // endregion
 }

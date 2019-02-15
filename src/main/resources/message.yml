@@ -1,64 +1,45 @@
-# UTF-8 require.
+doNotHavePermission: "&cYou don't have permission!!"
+missingArgument: "&cArgument is missing."
+invalidArgument: "&cInvalid argument&r: {value}"
+playerNotFound: "&cPlayer not found&r: {name}"
 
-DontHavePermission: "&cYou don't have permission!!"
-AccountNotFound: "&cAccount not found."
-InvalidAmount: "&cThe amount of the specified is invalid."
-UnknownError: "&cUnknown error..."
+accountNotFound: "&cAccount not found&r: {name}"
+notEnough: "&cThe balance of the account is not enough."
 
-# Available macro: [%player%],[%balance%]
-Show:
-  Success: "[%player%] balance [%balance%]."
+show: "{name} balance: {balance}"
+paySelf: "&cYou can't remit money to yourself."
+paySuccess: "&aSent a {amount} to {name}."
+payReceive: "&aReceived a {amount} from {name}."
+set: "&aBalance of {name} was set to {balance}."
+give: "&aGave {amount} to {name}."
+take: "&aTook {amount} from {name}."
+create: "&aHas been created account of {name} (Balance: {balance})."
+createAlready: "&cAccount already exists: {name}"
+remove: "&aHas been deleted account of {name} (Balance: {balance})"
+reloaded: "Config has been reloaded."
 
-# Available macro: [%player%],[%balance%]
-Pay:
-  NotEnough: "&cThe balance of the account is missing."
-  Self: "&cYou can't remit money to yourself."
-  Success: "&aSent a [%balance%] to [%player%]."
-  Receive: "&aReceived a [%balance%] from [%player%]."
+topFirst: "&a======&r Billionaires ranking (Page: {page}) &a======"
+topEntry: "{rank}: {name} ({balance})"
 
-Top:
-  Empty: "&cResult is empty."
-  # Available macro: [%page%]
-  First: "&a======&r Assets rankings(Page:[%page%]) &a======"
-  # Available macro: [%player%],[%balance%],[%rank%]
-  Entry: "[%rank%]:[%player%] ([%balance%])"
+newVersion:
+    - "New version available: {old} -> {new}"
+    - "Download: {url}"
 
-# Available macro: [%player%],[%balance%]
-Give:
-  Success: "&aGive [%balance%] to [%player%]."
+help:
+    show: "Show money."
+    pay: "Send <amount> to <player>."
+    set: "Set the balance of <player> to <balance>."
+    give: "Give <amount> to <player>."
+    take: "Take <amount> on <player>."
+    create: "Create <player> account."
+    remove: "Remove <player> account."
+    top: "Show billionaires ranking."
+    reload: "Reload the config."
+    version: "Show version and check new version."
+    help: "Show helps."
+    example: "Example:"
 
-# Available macro: [%player%],[%balance%]
-Take:
-  NotEnough: "&cThe balance of the account is missing."
-  Success: "&aTake the [%balance%] from the [%player%]."
-
-# Available macro: [%player%],[%balance%]
-Set:
-  Success: "&aBalance of [%player%] was set to [%balance%]."
-
-# Available macro: [%player%],[%balance%]
-Create:
-  Exists: "&cAccount already exists."
-  Success: "&aCreate the [%player%] account(Balance:[%balance%])."
-
-# Available macro: [%player%],[%balance%]
-Remove:
-  Success: "&aRemoved the [%player%] account(Balance:[%balance%])."
-
-# //*<!-- Help message. -->*/
-Help:
-  Show: "Show [player] money."
-  Pay: "Send money."
-  Top: "Show the top list."
-  Give: "Give money."
-  Take: "Take money."
-  Set: "Set money."
-  Create: "Create account."
-  Remove: "Remove account."
-  Reload: "Reload the config."
-  Help: "Show this help."
-
-# //*<!-- Color codes. -->*/
+# //*<!-- syntax -->*/
 # &0->Black(#000000)
 # &1->Dark Blue(#0000AA)
 # &2->Dark Green(#00AA00)
@@ -81,7 +62,9 @@ Help:
 # &n->Underline
 # &o->Italic
 # &r->Reset
-# &&->Escape the color code.
+# &&->&
+# {variable}->variable
+# &{variable&}->{variable}
 
 # Don't touch
-version: 1
+version: 2

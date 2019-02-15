@@ -3,17 +3,43 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jp.jyn</groupId>
     <artifactId>Jecon</artifactId>
-    <version>1.2.0</version>
+    <version>2.0.0</version>
+    <url>https://github.com/HimaJyun/Jecon</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <spigot.version>1.12.2-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.13.2-R0.1-SNAPSHOT</spigot.version>
+        <relocation.package>jp.jyn.jecon.lib</relocation.package>
     </properties>
+
+    <developers>
+        <developer>
+            <id>HimaJyun</id>
+            <url>https://jyn.jp/</url>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <distributionManagement>
+        <repository>
+            <id>internal.repos</id>
+            <name>internal repo</name>
+            <url>file://${project.basedir}/mvn-repo</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
             <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>himajyun-repo</id>
+            <url>https://himajyun.github.io/mvn-repo/</url>
         </repository>
         <repository>
             <id>vault-repo</id>
@@ -25,16 +51,24 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>${spigot.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.milkbowl.vault</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.6</version>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jp.jyn</groupId>
+            <artifactId>JBukkitLib</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>3.1.0</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -48,12 +82,23 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <optimize>true</optimize>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <author>true</author>
+                    <source>${java.version}</source>
+                    <encoding>UTF-8</encoding>
+                    <charset>UTF-8</charset>
+                    <docencoding>UTF-8</docencoding>
                 </configuration>
             </plugin>
         </plugins>
@@ -61,15 +106,8 @@
 
     <profiles>
         <profile>
-            <!-- Library version -->
+            <!-- Library version(-P lib) -->
             <id>lib</id>
-            <distributionManagement>
-                <repository>
-                    <id>internal.repos</id>
-                    <name>internal repo</name>
-                    <url>file://${project.basedir}/mvn-repo</url>
-                </repository>
-            </distributionManagement>
             <build>
                 <defaultGoal>clean javadoc:jar source:jar deploy</defaultGoal>
                 <resources>
@@ -83,7 +121,7 @@
             </build>
         </profile>
         <profile>
-            <!-- Executable plugin version -->
+            <!-- Executable plugin version(-P plugin) -->
             <id>plugin</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -94,7 +132,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.2.1</version>
                         <executions>
                             <execution>
                                 <phase>package</phase>
@@ -105,10 +143,21 @@
                                     <minimizeJar>true</minimizeJar>
                                     <artifactSet>
                                         <includes>
-                                            <include>com.zaxxer:*</include>
+                                            <include>jp.jyn:JBukkitLib</include>
+                                            <include>com.zaxxer:HikariCP</include>
                                             <include>org.slf4j:*</include>
                                         </includes>
                                     </artifactSet>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>jp.jyn.jbukkitlib</pattern>
+                                            <shadedPattern>${relocation.package}.jbukkitlib</shadedPattern>
+                                        </relocation>
+                                        <relocation>
+                                            <pattern>com.zaxxer.hikari</pattern>
+                                            <shadedPattern>${relocation.package}.hikari</shadedPattern>
+                                        </relocation>
+                                    </relocations>
                                 </configuration>
                             </execution>
                         </executions>

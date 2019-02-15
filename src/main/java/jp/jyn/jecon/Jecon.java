@@ -1,8 +1,25 @@
 package jp.jyn.jecon;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import jp.jyn.jbukkitlib.command.SubExecutor;
+import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
+import jp.jyn.jecon.command.Create;
+import jp.jyn.jecon.command.Give;
+import jp.jyn.jecon.command.Help;
+import jp.jyn.jecon.command.Pay;
+import jp.jyn.jecon.command.Reload;
+import jp.jyn.jecon.command.Remove;
+import jp.jyn.jecon.command.Set;
+import jp.jyn.jecon.command.Show;
+import jp.jyn.jecon.command.Take;
+import jp.jyn.jecon.command.Top;
+import jp.jyn.jecon.command.Version;
+import jp.jyn.jecon.config.ConfigLoader;
+import jp.jyn.jecon.config.MainConfig;
+import jp.jyn.jecon.config.MessageConfig;
+import jp.jyn.jecon.db.Database;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -10,173 +27,135 @@ import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
-import jp.jyn.jecon.command.Executer;
-import jp.jyn.jecon.config.ConfigStruct;
-import jp.jyn.jecon.config.MessageStruct;
-import jp.jyn.jecon.db.Database;
-import jp.jyn.jecon.db.rdbms.MySQL;
-import jp.jyn.jecon.db.rdbms.SQLite;
-import jp.jyn.jecon.listener.Login;
-import net.milkbowl.vault.economy.Economy;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class Jecon extends JavaPlugin {
+    private static Jecon instance = null;
 
-    private ConfigStruct config = null;
-    private MessageStruct message = null;
-    private Database db = null;
-    private boolean setupSuccess = false;
+    private ConfigLoader config;
+    private BalanceRepository repository;
 
-    /**
-     * プラグインを有効化します、状態を判断してリロードを行います。
-     */
+    // Stack(LIFO)
+    private final Deque<Runnable> destructor = new ArrayDeque<>();
+
     @Override
     public void onEnable() {
-        // どれかがnullでなければリロード、もしくは起動失敗
-        if (config != null || message != null || db != null) {
-            // 無効化
-            onDisable();
+        instance = this;
+        destructor.clear();
+
+        if (config == null) {
+            config = new ConfigLoader();
+        }
+        config.reloadConfig();
+        MainConfig main = config.getMainConfig();
+        MessageConfig message = config.getMessageConfig();
+
+        UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
+
+        VersionChecker checker = new VersionChecker(main.versionCheck, message);
+        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> checker.check(Bukkit.getConsoleSender()), 20 * 30);
+        destructor.addFirst(task::cancel);
+
+        // connect db
+        Database db = Database.connect(main.database);
+        destructor.addFirst(db::close);
+
+        // init repository
+        repository = new BalanceRepository(main, db);
+        destructor.addFirst(() -> repository = null);
+
+        // register vault
+        Plugin vault = getServer().getPluginManager().getPlugin("Vault");
+        if (vault != null) {
+            if (vault.isEnabled()) {
+                vaultHook(registry);
+            } else {
+                getServer().getPluginManager().registerEvents(new VaultRegister(registry), this);
+            }
         }
 
-        // nullなら読み込み、違えばリロード
-        config = (config == null ? new ConfigStruct(this) : config.reloadConfig());
-        message = (message == null ? new MessageStruct(this) : message.reloadConfig());
+        // register events
+        getServer().getPluginManager().registerEvents(new EventListener(main, checker, repository), this);
+        destructor.addFirst(() -> HandlerList.unregisterAll(this));
 
-        // データベースをロード
-        db = config.getDbConfig().isMySQL ? new MySQL(this) : new SQLite(this);
+        // register commands
+        SubExecutor.Builder builder = SubExecutor.Builder.init()
+            .setDefaultCommand("show")
+            .putCommand("show", new Show(message, registry, repository))
+            .putCommand("pay", new Pay(message, registry, repository))
+            .putCommand("set", new Set(message, registry, repository))
+            .putCommand("give", new Give(message, registry, repository))
+            .putCommand("take", new Take(message, registry, repository))
+            .putCommand("create", new Create(message, registry, repository))
+            .putCommand("remove", new Remove(message, registry, repository))
+            .putCommand("top", new Top(message, registry, repository))
+            .putCommand("reload", new Reload(message))
+            .putCommand("version", new Version(message, checker));
+        Help help = new Help(message, builder.getSubCommands());
+        builder.setErrorExecutor(help).putCommand("help", help);
 
-        // ログインイベントを有効化
-        new Login(this);
+        PluginCommand cmd = getCommand("jecon");
+        SubExecutor subExecutor = builder.register(cmd);
+        destructor.addFirst(() -> {
+            cmd.setTabCompleter(this);
+            cmd.setExecutor(this);
+        });
+    }
 
-        // Vaultが有効かチェック
-        new Listener() {
-            private Jecon jecon;
-
-            void setJecon(Jecon jecon) {
-                this.jecon = jecon;
-                Plugin pl = jecon.getServer().getPluginManager().getPlugin("Vault");
-                if (pl == null) {
-                    // Vaultが無い
-                    return;
-                }
-                if (!pl.isEnabled()) {
-                    // あるけど起動してない
-                    jecon.getServer().getPluginManager().registerEvents(this, jecon);
-                } else {
-                    // あるし起動もしてる
-                    vaultHook();
-                }
-            }
-
-            private void vaultHook() {
-                // Jeconを登録
-                jecon.getServer().getServicesManager().register(
-                    Economy.class,
-                    new VaultEconomy(jecon),
-                    jecon,
-                    ServicePriority.Normal);
-            }
-
-            @EventHandler
-            public void plEnable(PluginEnableEvent e) {
-                // Vaultが有効化された
-                if (e.getPlugin().getName().equals("Vault")) {
-                    vaultHook();
-                    // 登録解除
-                    PluginEnableEvent.getHandlerList().unregister(jecon);
-                }
-            }
-        }.setJecon(this);
-
-        // コマンドを登録
-        getCommand("money").setExecutor(new Executer(this));
-
-        // セットアップ成功を示す
-        setupSuccess = true;
+    private void vaultHook(UUIDRegistry registry) {
+        getServer().getServicesManager().register(
+            Economy.class,
+            new VaultEconomy(registry, this.config.getMainConfig(), this.repository),
+            this,
+            ServicePriority.Normal
+        );
+        this.destructor.addFirst(() -> getServer().getServicesManager().unregisterAll(this));
+        getLogger().info("Hooked Vault");
     }
 
     @Override
     public void onDisable() {
-        // 未セットアップに戻す
-        setupSuccess = false;
-
-        // コマンド登録解除
-        getCommand("money").setExecutor(this);
-        // Vaultフック解除
-        getServer().getServicesManager().unregisterAll(this);
-        // イベント登録解除
-        HandlerList.unregisterAll(this);
-
-        // データベースを閉じる
-        if (db != null) {
-            db.close();
+        while (!destructor.isEmpty()) {
+            destructor.removeFirst().run();
         }
     }
 
     /**
-     * 通常ここが呼び出される事はありません。<br>
-     * 何らかのエラーでプラグインの起動に失敗した場合などに呼び出されます。(と、思います。)
+     * Get Jecon instance
+     *
+     * @return Jecon
      */
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // 引数チェック
-        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-            // 権限チェック
-            if (!sender.hasPermission("jecon.reload")) {
-                // エラーメッセージ([Jecon] You don't have permission!!)
-                sender.sendMessage("[" + ChatColor.RED + "Jecon" + ChatColor.RESET + "] You don't have permission!!");
-                return true;
+    public static Jecon getInstance() {
+        return instance;
+    }
+
+    /**
+     * Get BalanceRepository
+     *
+     * @return BalanceRepository
+     */
+    public BalanceRepository getRepository() {
+        return repository;
+    }
+
+    private static class VaultRegister implements Listener {
+        private final UUIDRegistry registry;
+
+        private VaultRegister(UUIDRegistry registry) {
+            this.registry = registry;
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onPluginEnable(PluginEnableEvent e) {
+            if (!e.getPlugin().getName().equals("Vault")) {
+                return;
             }
-            // リロード
-            onEnable();
-            // リロード完了のメッセージ([Jecon] Config has been reloaded!!)
-            sender.sendMessage("[" + ChatColor.GREEN + "Jecon" + ChatColor.RESET
-                               + "] Config has been reloaded!!");
-        } else {
-            // エラーメッセージ([Jecon] Initialization Error!!)
-            sender.sendMessage("[" + ChatColor.RED + "Jecon" + ChatColor.RESET + "] Initialization "
-                               + ChatColor.RED + "Error" + ChatColor.RESET + "!!");
-            // 管理人に連絡して下さいメッセージ([Jecon] Plase contact the administrator!!)
-            sender.sendMessage("[" + ChatColor.RED + "Jecon" + ChatColor.RESET + "] Please " + ChatColor.BOLD
-                               + "contact" + ChatColor.RESET + " the " + ChatColor.BOLD + "administrator" + ChatColor.RESET
-                               + "!!");
+            Jecon jecon = Jecon.getInstance();
+            jecon.vaultHook(registry);
+            PluginEnableEvent.getHandlerList().unregister(jecon);
         }
-        return true;
-    }
-
-    /**
-     * 設定を取得します。
-     *
-     * @return 読み込み済みのConfigStruct
-     */
-    public ConfigStruct getConfigStruct() {
-        return config;
-    }
-
-    /**
-     * メッセージ設定を読み込みます。
-     *
-     * @return 読み込み済みのMessageStruct
-     */
-    public MessageStruct getMessageStruct() {
-        return message;
-    }
-
-    /**
-     * セットアップが正常に完了しているか確認します。
-     *
-     * @return 正常に終了していればtrue、何らかのエラーで出来ていなければfalse
-     */
-    public boolean isSetupSuccess() {
-        return setupSuccess;
-    }
-
-    /**
-     * DataBaseクラスのインスタンスを取得します。
-     *
-     * @return インスタンス化済みのDataBase
-     */
-    public Database getDb() {
-        return db;
     }
 }
