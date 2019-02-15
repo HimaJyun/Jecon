@@ -24,6 +24,13 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <distributionManagement>
+        <repository>
+            <id>internal.repos</id>
+            <name>internal repo</name>
+            <url>file://${project.basedir}/mvn-repo</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
@@ -89,13 +96,6 @@
         <profile>
             <!-- Library version(-P lib) -->
             <id>lib</id>
-            <distributionManagement>
-                <repository>
-                    <id>internal.repos</id>
-                    <name>internal repo</name>
-                    <url>file://${project.basedir}/mvn-repo</url>
-                </repository>
-            </distributionManagement>
             <build>
                 <defaultGoal>clean javadoc:jar source:jar deploy</defaultGoal>
                 <resources>
@@ -132,8 +132,8 @@
                                     <artifactSet>
                                         <includes>
                                             <include>jp.jyn:JBukkitLib</include>
-                                            <include>org.slf4j:*</include>
                                             <include>com.zaxxer:HikariCP</include>
+                                            <include>org.slf4j:*</include>
                                         </includes>
                                     </artifactSet>
                                     <relocations>

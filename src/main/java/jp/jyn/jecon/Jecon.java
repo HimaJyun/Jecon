@@ -123,10 +123,20 @@ public class Jecon extends JavaPlugin {
         }
     }
 
+    /**
+     * Get Jecon instance
+     *
+     * @return Jecon
+     */
     public static Jecon getInstance() {
         return instance;
     }
 
+    /**
+     * Get BalanceRepository
+     *
+     * @return BalanceRepository
+     */
     public BalanceRepository getRepository() {
         return repository;
     }

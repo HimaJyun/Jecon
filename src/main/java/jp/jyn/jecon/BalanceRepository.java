@@ -2,6 +2,7 @@ package jp.jyn.jecon;
 
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import jp.jyn.jecon.config.MainConfig;
 import jp.jyn.jecon.db.Database;
 
@@ -17,8 +18,6 @@ import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
 public class BalanceRepository {
-    public enum Result {SUCCESS, ACCOUNT_NOT_FOUND}
-
     public final static int FRACTIONAL_DIGITS = 2;
     private final static int MULTIPLIER = 100;
 
@@ -32,12 +31,13 @@ public class BalanceRepository {
     private final Map<UUID, Integer> uuidToIdCache;
     private final Map<Integer, OptionalLong> idToBalanceCache;
 
-    public BalanceRepository(MainConfig config, Database db) {
+    @PackagePrivate
+    BalanceRepository(MainConfig config, Database db) {
         this.config = config;
         this.db = db;
         this.defaultBalance = config.defaultBalance;
-        uuidToIdCache = config.cache.id.create(false);
-        idToBalanceCache = config.cache.balance.create(false);
+        uuidToIdCache = config.cache.id.create();
+        idToBalanceCache = config.cache.balance.create();
     }
 
     private long double2long(double value) {
@@ -61,14 +61,32 @@ public class BalanceRepository {
         return (minor == 0 ? f.formatZeroMinor : f.format).toString(v);
     }
 
+    /**
+     * Format the amount
+     *
+     * @param value value
+     * @return Formatted value
+     */
     public String format(double value) {
         return format(double2long(value));
     }
 
+    /**
+     * Format the amount
+     *
+     * @param value value
+     * @return Formatted value
+     */
     public String format(BigDecimal value) {
         return format(decimal2long(value));
     }
 
+    /**
+     * Form the player balance
+     *
+     * @param uuid Target uuid
+     * @return Formatted balance, empty if no player exists
+     */
     public Optional<String> format(UUID uuid) {
         OptionalLong balance = getRawBalance(getId(uuid));
         if (balance.isPresent()) {
@@ -92,6 +110,12 @@ public class BalanceRepository {
         return idToBalanceCache.computeIfAbsent(id, db::getBalance);
     }
 
+    /**
+     * Get balance with double
+     *
+     * @param uuid Target uuid
+     * @return Balance, empty if account does not exist
+     */
     public OptionalDouble getDouble(UUID uuid) {
         OptionalLong v = getRawBalance(getId(uuid));
         if (v.isPresent()) {
@@ -101,6 +125,12 @@ public class BalanceRepository {
         }
     }
 
+    /**
+     * Get balance with BigDecimal
+     *
+     * @param uuid Target uuid
+     * @return Balance, empty if account does not exist
+     */
     public Optional<BigDecimal> getDecimal(UUID uuid) {
         OptionalLong v = getRawBalance(getId(uuid));
         if (v.isPresent()) {
@@ -110,10 +140,10 @@ public class BalanceRepository {
         }
     }
 
-    private Result deposit(UUID uuid, long amount) {
+    private boolean deposit(UUID uuid, long amount) {
         Integer id = getId(uuid);
         if (!db.deposit(id, amount)) {
-            return Result.ACCOUNT_NOT_FOUND;
+            return false;
         }
 
         OptionalLong v = idToBalanceCache.get(id);
@@ -121,22 +151,50 @@ public class BalanceRepository {
             idToBalanceCache.put(id, OptionalLong.of(v.getAsLong() + amount));
         }
 
-        return Result.SUCCESS;
+        return true;
     }
 
-    public Result deposit(UUID uuid, double amount) {
+    /**
+     * Deposit with double
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if deposit was successful, false otherwise (eg no account exists)
+     */
+    public boolean deposit(UUID uuid, double amount) {
         return this.deposit(uuid, double2long(amount));
     }
 
-    public Result deposit(UUID uuid, BigDecimal amount) {
+    /**
+     * Deposit with BigDecimal
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if deposit was successful, false otherwise (eg no account exists)
+     */
+    public boolean deposit(UUID uuid, BigDecimal amount) {
         return this.deposit(uuid, decimal2long(amount));
     }
 
-    public Result withdraw(UUID uuid, double amount) {
+    /**
+     * Withdraw with double
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if withdraw was successful, false otherwise (eg no account exists)
+     */
+    public boolean withdraw(UUID uuid, double amount) {
         return this.deposit(uuid, -double2long(amount));
     }
 
-    public Result withdraw(UUID uuid, BigDecimal amount) {
+    /**
+     * Withdraw with BigDecimal
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if withdraw was successful, false otherwise (eg no account exists)
+     */
+    public boolean withdraw(UUID uuid, BigDecimal amount) {
         return this.deposit(uuid, -decimal2long(amount));
     }
 
@@ -144,6 +202,12 @@ public class BalanceRepository {
         return getRawBalance(id).isPresent();
     }
 
+    /**
+     * Does the account exist?
+     *
+     * @param uuid Target uuid
+     * @return true if it exists
+     */
     public boolean hasAccount(UUID uuid) {
         return hasAccount(getId(uuid));
     }
@@ -158,30 +222,68 @@ public class BalanceRepository {
         return false;
     }
 
+    /**
+     * Create account
+     *
+     * @param uuid    Target uuid
+     * @param balance balance
+     * @return true if creation succeeded, otherwise false (eg account already exists)
+     */
     public boolean createAccount(UUID uuid, double balance) {
         return createAccount(uuid, double2long(balance));
     }
 
+    /**
+     * Create account
+     *
+     * @param uuid    Target uuid
+     * @param balance balance
+     * @return true if creation succeeded, otherwise false (eg account already exists)
+     */
     public boolean createAccount(UUID uuid, BigDecimal balance) {
         return createAccount(uuid, decimal2long(balance));
     }
 
+    /**
+     * Remove account
+     *
+     * @param uuid Target uuid
+     * @return true if removed, false otherwise (eg account does not exist)
+     */
     public boolean removeAccount(UUID uuid) {
         Integer id = getId(uuid);
         idToBalanceCache.remove(id);
         return db.removeAccount(id);
     }
 
-    public boolean has(UUID uuid, double amount) {
-        OptionalDouble balance = getDouble(uuid);
+    private boolean has(UUID uuid, long amount) {
+        OptionalLong balance = getRawBalance(getId(uuid));
         if (!balance.isPresent()) {
             return false;
         }
-        return balance.getAsDouble() >= amount;
+        return balance.getAsLong() >= amount;
     }
 
+    /**
+     * Is the balance greater than the specified value?
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if balance is enough
+     */
+    public boolean has(UUID uuid, double amount) {
+        return has(uuid, (long) amount * MULTIPLIER);
+    }
+
+    /**
+     * Is the balance greater than the specified value?
+     *
+     * @param uuid   Target uuid
+     * @param amount amount
+     * @return true if balance is enough
+     */
     public boolean has(UUID uuid, BigDecimal amount) {
-        return getDecimal(uuid).map(b -> b.compareTo(amount) > -1).orElse(false);
+        return has(uuid, amount.scaleByPowerOfTen(FRACTIONAL_DIGITS).longValue());
     }
 
     private boolean set(UUID uuid, long balance) {
@@ -193,10 +295,24 @@ public class BalanceRepository {
         return false;
     }
 
+    /**
+     * Set balance
+     *
+     * @param uuid    Target uuid
+     * @param balance New balance
+     * @return true if it was successfully updated, false otherwise (eg account does not exist)
+     */
     public boolean set(UUID uuid, double balance) {
         return set(uuid, double2long(balance));
     }
 
+    /**
+     * Set balance
+     *
+     * @param uuid    Target uuid
+     * @param balance New balance
+     * @return true if it was successfully updated, false otherwise (eg account does not exist)
+     */
     public boolean set(UUID uuid, BigDecimal balance) {
         return set(uuid, decimal2long(balance));
     }

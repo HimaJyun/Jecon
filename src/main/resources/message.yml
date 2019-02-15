@@ -27,15 +27,15 @@ newVersion:
 
 help:
     show: "Show money."
-    pay: "Send money."
-    set: "Set money."
-    give: "Give money."
-    take: "Take money."
-    create: "Create account."
-    remove: "Remove account."
+    pay: "Send <amount> to <player>."
+    set: "Set the balance of <player> to <balance>."
+    give: "Give <amount> to <player>."
+    take: "Take <amount> on <player>."
+    create: "Create <player> account."
+    remove: "Remove <player> account."
     top: "Show billionaires ranking."
-    reload: "Reload config."
-    version: "Show version."
+    reload: "Reload the config."
+    version: "Show version and check new version."
     help: "Show helps."
     example: "Example:"
 
