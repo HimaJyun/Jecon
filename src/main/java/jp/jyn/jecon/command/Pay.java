@@ -33,7 +33,7 @@ public class Pay extends SubCommand {
         UUID from = sender.getUniqueId();
         String to = args.remove();
         BigDecimal amount = CommandUtils.parseDecimal(args.element());
-        if (amount == null) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             sender.sendMessage(message.invalidArgument.toString("value", args.element()));
             return Result.OK;
         }
