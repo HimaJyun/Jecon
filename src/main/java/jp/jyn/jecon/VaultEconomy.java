@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.OptionalDouble;
 import java.util.UUID;
 
-public class VaultEconomy implements Economy {
+@PackagePrivate class VaultEconomy implements Economy {
     private final UUIDRegistry registry;
     private final MainConfig config;
     private final BalanceRepository repository;
@@ -184,7 +184,7 @@ public class VaultEconomy implements Economy {
 
     private EconomyResponse depositPlayer(UUID uuid, double value) {
         if (value < 0) {
-            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot desposit negative funds");
+            return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Cannot deposit negative funds");
         }
 
         switch (repository.deposit(uuid, value)) {

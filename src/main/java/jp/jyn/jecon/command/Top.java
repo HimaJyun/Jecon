@@ -17,7 +17,7 @@ import java.util.Queue;
 import java.util.UUID;
 
 public class Top extends SubCommand {
-    private final static int ENTRY_PER_PAGE = 9; // Default chat height(10) - Header height(1)
+    private final static int ENTRY_PER_PAGE = 10;
     private final MessageConfig message;
     private final UUIDRegistry registry;
     private final BalanceRepository repository;

@@ -87,6 +87,7 @@ public class MySQL extends Database {
     }
 
     private void v1to2(String prefix) {
+        Jecon.getInstance().getLogger().info("prefix: " + prefix);
         try (Connection connection = hikari.getConnection();
              Statement statement = connection.createStatement()) {
             statement.executeUpdate("RENAME TABLE " +

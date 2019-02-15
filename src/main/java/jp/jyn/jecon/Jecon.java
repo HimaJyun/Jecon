@@ -18,13 +18,16 @@ import jp.jyn.jecon.config.MainConfig;
 import jp.jyn.jecon.config.MessageConfig;
 import jp.jyn.jecon.db.Database;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -52,6 +55,10 @@ public class Jecon extends JavaPlugin {
 
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 
+        VersionChecker checker = new VersionChecker(main.versionCheck, message);
+        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> checker.check(Bukkit.getConsoleSender()), 20 * 30);
+        destructor.addFirst(task::cancel);
+
         // connect db
         Database db = Database.connect(main.database);
         destructor.addFirst(db::close);
@@ -70,6 +77,10 @@ public class Jecon extends JavaPlugin {
             }
         }
 
+        // register events
+        getServer().getPluginManager().registerEvents(new EventListener(main, checker, repository), this);
+        destructor.addFirst(() -> HandlerList.unregisterAll(this));
+
         // register commands
         SubExecutor.Builder builder = SubExecutor.Builder.init()
             .setDefaultCommand("show")
@@ -82,7 +93,7 @@ public class Jecon extends JavaPlugin {
             .putCommand("remove", new Remove(message, registry, repository))
             .putCommand("top", new Top(message, registry, repository))
             .putCommand("reload", new Reload(message))
-            .putCommand("version", new Version(message));
+            .putCommand("version", new Version(message, checker));
         Help help = new Help(message, builder.getSubCommands());
         builder.setErrorExecutor(help).putCommand("help", help);
 
