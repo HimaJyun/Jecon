@@ -1,5 +1,6 @@
 package jp.jyn.jecon;
 
+import jp.jyn.jbukkitlib.util.PackagePrivate;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import jp.jyn.jecon.config.MainConfig;
 import net.milkbowl.vault.economy.Economy;
@@ -16,7 +17,8 @@ public class VaultEconomy implements Economy {
     private final MainConfig config;
     private final BalanceRepository repository;
 
-    public VaultEconomy(UUIDRegistry registry, MainConfig config, BalanceRepository repository) {
+    @PackagePrivate
+    VaultEconomy(UUIDRegistry registry, MainConfig config, BalanceRepository repository) {
         this.registry = registry;
         this.config = config;
         this.repository = repository;
@@ -125,12 +127,12 @@ public class VaultEconomy implements Economy {
 
     @Override
     public boolean createPlayerAccount(String s) {
-        return registry.getUUID(s).map(repository::createAccount).orElse(false);
+        return registry.getUUID(s).map(uuid -> repository.createAccount(uuid, repository.defaultBalance)).orElse(false);
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer offlinePlayer) {
-        return repository.createAccount(offlinePlayer.getUniqueId());
+        return repository.createAccount(offlinePlayer.getUniqueId(), repository.defaultBalance);
     }
 
     @Override

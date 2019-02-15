@@ -6,21 +6,28 @@ import jp.jyn.jecon.config.MainConfig;
 import jp.jyn.jecon.db.Database;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
 import java.util.UUID;
 
+@SuppressWarnings("WeakerAccess")
 public class BalanceRepository {
     public enum Result {SUCCESS, ACCOUNT_NOT_FOUND}
 
     public final static int FRACTIONAL_DIGITS = 2;
     private final static int MULTIPLIER = 100;
+
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
     private final StringVariable variable = StringVariable.init();
 
     private final MainConfig config;
     private final Database db;
+    public final BigDecimal defaultBalance;
 
     private final Map<UUID, Integer> uuidToIdCache;
     private final Map<Integer, OptionalLong> idToBalanceCache;
@@ -28,6 +35,7 @@ public class BalanceRepository {
     public BalanceRepository(MainConfig config, Database db) {
         this.config = config;
         this.db = db;
+        this.defaultBalance = config.defaultBalance;
         uuidToIdCache = config.cache.id.create(false);
         idToBalanceCache = config.cache.balance.create(false);
     }
@@ -45,7 +53,7 @@ public class BalanceRepository {
         long major = value / MULTIPLIER;
         long minor = value % MULTIPLIER;
         TemplateVariable v = variable.clear()
-            .put("major", major)
+            .put("major", numberFormat.format(major))
             .put("minor", minor)
             .put("majorcurrency", major > 1 ? f.pluralMajor : f.singularMajor)
             .put("minorcurrency", minor > 1 ? f.pluralMinor : f.singularMinor);
@@ -59,6 +67,14 @@ public class BalanceRepository {
 
     public String format(BigDecimal value) {
         return format(decimal2long(value));
+    }
+
+    public Optional<String> format(UUID uuid) {
+        OptionalLong balance = getRawBalance(getId(uuid));
+        if (balance.isPresent()) {
+            return Optional.of(format(balance.getAsLong()));
+        }
+        return Optional.empty();
     }
 
     private Integer getId(UUID uuid) {
@@ -101,7 +117,7 @@ public class BalanceRepository {
         }
 
         OptionalLong v = idToBalanceCache.get(id);
-        if (v.isPresent()) {
+        if (v != null && v.isPresent()) {
             idToBalanceCache.put(id, OptionalLong.of(v.getAsLong() + amount));
         }
 
@@ -150,10 +166,6 @@ public class BalanceRepository {
         return createAccount(uuid, decimal2long(balance));
     }
 
-    public boolean createAccount(UUID uuid) {
-        return createAccount(uuid, config.defaultBalance);
-    }
-
     public boolean removeAccount(UUID uuid) {
         Integer id = getId(uuid);
         idToBalanceCache.remove(id);
@@ -161,11 +173,15 @@ public class BalanceRepository {
     }
 
     public boolean has(UUID uuid, double amount) {
-        return getDouble(uuid).orElse(0) >= amount;
+        OptionalDouble balance = getDouble(uuid);
+        if (!balance.isPresent()) {
+            return false;
+        }
+        return balance.getAsDouble() >= amount;
     }
 
     public boolean has(UUID uuid, BigDecimal amount) {
-        return getDecimal(uuid).orElse(BigDecimal.ZERO).compareTo(amount) > -1;
+        return getDecimal(uuid).map(b -> b.compareTo(amount) > -1).orElse(false);
     }
 
     private boolean set(UUID uuid, long balance) {
@@ -183,5 +199,24 @@ public class BalanceRepository {
 
     public boolean set(UUID uuid, BigDecimal balance) {
         return set(uuid, decimal2long(balance));
+    }
+
+    public Map<UUID, BigDecimal> top(int limit, int offset) {
+        Map<UUID, BigDecimal> result = new LinkedHashMap<>();
+
+        // This is a heavy load.
+        // But, it is not a frequently executed process, so there is no problem.
+        HashMap<Integer, UUID> idToUUID = new HashMap<>(uuidToIdCache.size() * 4 / 3);
+        uuidToIdCache.forEach((key, value) -> idToUUID.put(value, key));
+
+        db.top(limit, offset).forEach((id, balance) -> {
+            UUID uuid = idToUUID.get(id);
+            if (uuid == null) {
+                uuid = db.getUUID(id).orElse(null);
+            }
+            result.put(uuid, BigDecimal.valueOf(balance).scaleByPowerOfTen(-FRACTIONAL_DIGITS));
+        });
+
+        return result;
     }
 }

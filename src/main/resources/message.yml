@@ -37,6 +37,7 @@ help:
     reload: "Reload config."
     version: "Show version."
     help: "Show helps."
+    example: "Example:"
 
 # //*<!-- syntax -->*/
 # &0->Black(#000000)

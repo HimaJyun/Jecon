@@ -132,6 +132,7 @@ public class MessageConfig {
         public final TemplateParser reload;
         public final TemplateParser version;
         public final TemplateParser help;
+        public final TemplateParser example;
 
         private HelpMessage(ConfigurationSection config) {
             show = parse(config.getString("show"));
@@ -145,6 +146,7 @@ public class MessageConfig {
             reload = parse(config.getString("reload"));
             version = parse(config.getString("version"));
             help = parse(config.getString("help"));
+            example = parse(config.getString("example"));
         }
     }
 

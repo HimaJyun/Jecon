@@ -12,6 +12,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -100,7 +103,7 @@ public abstract class Database {
                     "INSERT INTO `account` (`uuid`) VALUES (?)"
                 )) {
                     insert.setBytes(1, byteUUID);
-                    insert.executeQuery();
+                    insert.executeUpdate();
                 }
 
                 // re get id
@@ -120,6 +123,23 @@ public abstract class Database {
             throw new RuntimeException(e);
         }
         throw new RuntimeException("The ID could not be issued.");
+    }
+
+    public Optional<UUID> getUUID(int id) {
+        try (Connection connection = hikari.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                 "SELECT `uuid` FROM `account` WHERE `id`=?"
+             )) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(UUIDBytes.fromBytes(resultSet.getBytes(1)));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
     }
 
     public OptionalLong getBalance(int id) {
@@ -191,5 +211,26 @@ public abstract class Database {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Map<Integer, Long> top(int limit, int offset) {
+        Map<Integer, Long> result = new LinkedHashMap<>();
+        // Note: Table full scan will occur
+
+        try (Connection connection = hikari.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                 "SELECT `id`,`balance` FROM `balance` ORDER BY `balance` DESC LIMIT ? OFFSET ?"
+             )) {
+            statement.setInt(1, limit);
+            statement.setInt(2, offset);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    result.put(resultSet.getInt("id"), resultSet.getLong("balance"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }

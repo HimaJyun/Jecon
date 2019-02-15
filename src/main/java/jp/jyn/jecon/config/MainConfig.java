@@ -4,7 +4,6 @@ import jp.jyn.jbukkitlib.cache.CacheFactory;
 import jp.jyn.jbukkitlib.config.parser.template.StringParser;
 import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
-import jp.jyn.jecon.BalanceRepository;
 import jp.jyn.jecon.Jecon;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -16,7 +15,7 @@ import java.util.Properties;
 public class MainConfig {
     public final boolean versionCheck;
 
-    public final long defaultBalance;
+    public final BigDecimal defaultBalance;
     public final boolean createAccountOnJoin;
 
     public final FormatConfig format;
@@ -26,7 +25,7 @@ public class MainConfig {
     @PackagePrivate
     MainConfig(ConfigurationSection config) {
         versionCheck = config.getBoolean("versionCheck");
-        defaultBalance = new BigDecimal(config.getString("defaultBalance")).scaleByPowerOfTen(BalanceRepository.FRACTIONAL_DIGITS).longValue();
+        defaultBalance = new BigDecimal(config.getString("defaultBalance"));
         createAccountOnJoin = config.getBoolean("createAccountOnJoin");
 
         format = new FormatConfig(config.getConfigurationSection("format"));
