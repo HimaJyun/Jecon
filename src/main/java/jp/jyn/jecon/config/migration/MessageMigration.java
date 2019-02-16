@@ -34,6 +34,7 @@ public class MessageMigration {
 
     private static void v1to2(ConfigurationSection config) {
         final String[] m = {"[%player%]", "{name}", "[%balance%]", "{balance}"};
+        final String[] m2 = {"[%player%]", "{name}", "[%balance%]", "{amount}"};
 
         move(config, "DontHavePermission", "doNotHavePermission");
         config.set("missingArgument", "&cArgument is missing.");
@@ -48,7 +49,6 @@ public class MessageMigration {
         macro(config, "show", m);
         config.set("Show", null);
 
-        move(config, "Pay.Self", "paySelf");
         move(config, "Pay.Success", "paySuccess");
         move(config, "Pay.Receive", "payReceive");
         move(config, "Set.Success", "set");
@@ -57,11 +57,11 @@ public class MessageMigration {
         move(config, "Create.Success", "create");
         move(config, "Create.Exists", "createAlready");
         move(config, "Remove.Success", "remove");
-        macro(config, "paySuccess", m);
-        macro(config, "payReceive", m);
+        macro(config, "paySuccess", m2);
+        macro(config, "payReceive", m2);
         macro(config, "set", m);
-        macro(config, "give", m);
-        macro(config, "take", m);
+        macro(config, "give", m2);
+        macro(config, "take", m2);
         macro(config, "create", m);
         macro(config, "createAlready", m);
         macro(config, "remove", m);
