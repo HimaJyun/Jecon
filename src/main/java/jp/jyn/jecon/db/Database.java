@@ -233,4 +233,8 @@ public abstract class Database {
         }
         return result;
     }
+
+    public boolean setCreate(int id, long balance) {
+        return this.setBalance(id, balance) || this.createAccount(id, balance);
+    }
 }

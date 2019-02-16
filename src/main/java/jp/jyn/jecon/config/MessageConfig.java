@@ -36,7 +36,6 @@ public class MessageConfig {
      * name,balance
      */
     public final TemplateParser show;
-    public final TemplateParser paySelf;
     /**
      * amount,name
      */
@@ -98,7 +97,6 @@ public class MessageConfig {
         notEnough = parse(config, "notEnough");
 
         show = parse(config, "show");
-        paySelf = parse(config, "paySelf");
         paySuccess = parse(config, "paySuccess");
         payReceive = parse(config, "payReceive");
         set = parse(config, "set");

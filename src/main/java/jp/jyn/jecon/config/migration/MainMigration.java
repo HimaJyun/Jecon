@@ -47,7 +47,9 @@ public class MainMigration {
         config.set("versionCheck", true);
         move(config, "DefaultBalance", "defaultBalance");
         move(config, "CreateAccountOnJoin", "createAccountOnJoin");
+        config.set("lazyWrite", true);
         config.set("TopCommandEntryPerPage", null);
+        config.set("cache", null);
         // "Format" can not be automatically migrated.
         config.set("Format", null);
         config.set("format.singularMajor", "dollar");
@@ -62,6 +64,9 @@ public class MainMigration {
         move(config, "Database.MySQL.Name", "database.mysql.name");
         move(config, "Database.MySQL.User", "database.mysql.username");
         move(config, "Database.MySQL.Pass", "database.mysql.password");
+        if (System.getProperty("jecon.prefix") == null) {
+            System.setProperty("jecon.prefix", config.getString("Database.MySQL.Prefix"));
+        }
         config.set("Database.MySQL.Prefix", null);
         config.set("database.mysql.init", "SET SESSION query_cache_type=0");
         v2DBProperties(config);

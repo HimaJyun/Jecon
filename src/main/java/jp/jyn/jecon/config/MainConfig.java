@@ -1,6 +1,5 @@
 package jp.jyn.jecon.config;
 
-import jp.jyn.jbukkitlib.cache.CacheFactory;
 import jp.jyn.jbukkitlib.config.parser.template.StringParser;
 import jp.jyn.jbukkitlib.config.parser.template.TemplateParser;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
@@ -18,9 +17,9 @@ public class MainConfig {
     public final BigDecimal defaultBalance;
     public final boolean createAccountOnJoin;
 
+    public final boolean lazyWrite;
     public final FormatConfig format;
     public final DatabaseConfig database;
-    public final CacheConfig cache;
 
     @PackagePrivate
     MainConfig(ConfigurationSection config) {
@@ -28,9 +27,10 @@ public class MainConfig {
         defaultBalance = new BigDecimal(config.getString("defaultBalance"));
         createAccountOnJoin = config.getBoolean("createAccountOnJoin");
 
+        lazyWrite = config.getBoolean("lazyWrite");
+
         format = new FormatConfig(config.getConfigurationSection("format"));
         database = new DatabaseConfig(config.getConfigurationSection("database"));
-        cache = new CacheConfig(config.getConfigurationSection("cache"));
     }
 
     public final static class FormatConfig {
@@ -97,16 +97,6 @@ public class MainConfig {
             maxLifetime = config.getLong("database.connectionPool.maxLifetime");
             connectionTimeout = config.getLong("database.connectionPool.connectionTimeout");
             idleTimeout = config.getLong("database.connectionPool.idleTimeout");
-        }
-    }
-
-    public final static class CacheConfig {
-        public final CacheFactory id;
-        public final CacheFactory balance;
-
-        private CacheConfig(ConfigurationSection config) {
-            id = new CacheFactory.Sized(config.getInt("id"));
-            balance = new CacheFactory.Sized(config.getInt("balance"));
         }
     }
 }

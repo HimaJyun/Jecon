@@ -4,7 +4,7 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
-import jp.jyn.jecon.BalanceRepository;
+import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
 import org.bukkit.command.CommandSender;
 

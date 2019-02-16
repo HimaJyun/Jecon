@@ -7,7 +7,6 @@ accountNotFound: "&cAccount not found&r: {name}"
 notEnough: "&cThe balance of the account is not enough."
 
 show: "{name} balance: {balance}"
-paySelf: "&cYou can't remit money to yourself."
 paySuccess: "&aSent a {amount} to {name}."
 payReceive: "&aReceived a {amount} from {name}."
 set: "&aBalance of {name} was set to {balance}."

@@ -4,6 +4,11 @@ versionCheck: true
 defaultBalance: 10000.0
 createAccountOnJoin: true
 
+# Do you want to enable lazy writing?
+# When enabled, it will delay writing to the database until the user logs out. (It improves performance.)
+# If you log in to "multiple servers" "sharing the database" at the "same time", the balance will be incorrect.
+lazyWrite: true
+
 format:
     singularMajor: "dollar"
     pluralMajor: "dollars"
@@ -52,13 +57,6 @@ database:
         maxLifetime: -1
         connectionTimeout: -1
         idleTimeout: -1
-
-cache:
-    # +n == The specified number is stored in the LRU cache(memory saving)
-    # -1 == Infinity(fast)
-    #  0 == Disable(When using from multiple servers)
-    id: -1
-    balance: -1
 
 # Don't touch
 version: 3

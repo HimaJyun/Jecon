@@ -4,7 +4,8 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
-import jp.jyn.jecon.BalanceRepository;
+import jp.jyn.jecon.config.MainConfig;
+import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
 import org.bukkit.command.CommandSender;
 
@@ -18,10 +19,14 @@ public class Create extends SubCommand {
     private final UUIDRegistry registry;
     private final BalanceRepository repository;
 
-    public Create(MessageConfig message, UUIDRegistry registry, BalanceRepository repository) {
+    private final BigDecimal defaultBalance;
+
+    public Create(MainConfig main, MessageConfig message, UUIDRegistry registry, BalanceRepository repository) {
         this.message = message;
         this.registry = registry;
         this.repository = repository;
+
+        this.defaultBalance = main.defaultBalance;
     }
 
     @Override
@@ -29,7 +34,7 @@ public class Create extends SubCommand {
         String name = args.remove();
         final BigDecimal balance;
         try {
-            balance = args.isEmpty() ? repository.defaultBalance : new BigDecimal(args.element());
+            balance = args.isEmpty() ? defaultBalance : new BigDecimal(args.element());
         } catch (NumberFormatException e) {
             sender.sendMessage(message.invalidArgument.toString("value", args.element()));
             return Result.ERROR;

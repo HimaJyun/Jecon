@@ -3,10 +3,13 @@ package jp.jyn.jecon;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
 import jp.jyn.jecon.config.MainConfig;
+import jp.jyn.jecon.repository.AbstractRepository;
+import jp.jyn.jecon.repository.BalanceRepository;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -14,15 +17,19 @@ import java.util.UUID;
 
 @PackagePrivate
 class VaultEconomy implements Economy {
+    private final BigDecimal defaultBalance;
+
     private final UUIDRegistry registry;
     private final MainConfig config;
     private final BalanceRepository repository;
 
     @PackagePrivate
-    VaultEconomy(UUIDRegistry registry, MainConfig config, BalanceRepository repository) {
+    VaultEconomy(MainConfig config, UUIDRegistry registry, BalanceRepository repository) {
         this.registry = registry;
         this.config = config;
         this.repository = repository;
+
+        this.defaultBalance = config.defaultBalance;
     }
 
     @Override
@@ -45,7 +52,7 @@ class VaultEconomy implements Economy {
             Of course, it is also possible to make it more accurate. (However, in that case, the maximum value decreases)
             If you want it please post Issue.
          */
-        return BalanceRepository.FRACTIONAL_DIGITS;
+        return AbstractRepository.FRACTIONAL_DIGITS;
     }
 
     @Override
@@ -128,12 +135,12 @@ class VaultEconomy implements Economy {
 
     @Override
     public boolean createPlayerAccount(String s) {
-        return registry.getUUID(s).map(uuid -> repository.createAccount(uuid, repository.defaultBalance)).orElse(false);
+        return registry.getUUID(s).map(uuid -> repository.createAccount(uuid, defaultBalance)).orElse(false);
     }
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer offlinePlayer) {
-        return repository.createAccount(offlinePlayer.getUniqueId(), repository.defaultBalance);
+        return repository.createAccount(offlinePlayer.getUniqueId(), defaultBalance);
     }
 
     @Override

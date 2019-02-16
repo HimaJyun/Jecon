@@ -17,6 +17,9 @@ import jp.jyn.jecon.config.ConfigLoader;
 import jp.jyn.jecon.config.MainConfig;
 import jp.jyn.jecon.config.MessageConfig;
 import jp.jyn.jecon.db.Database;
+import jp.jyn.jecon.repository.BalanceRepository;
+import jp.jyn.jecon.repository.LazyRepository;
+import jp.jyn.jecon.repository.SyncRepository;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -64,8 +67,11 @@ public class Jecon extends JavaPlugin {
         destructor.addFirst(db::close);
 
         // init repository
-        repository = new BalanceRepository(main, db);
-        destructor.addFirst(() -> repository = null);
+        repository = main.lazyWrite ? new LazyRepository(main, db) : new SyncRepository(main, db);
+        destructor.addFirst(() -> {
+            repository.saveAll();
+            repository = null;
+        });
 
         // register vault
         Plugin vault = getServer().getPluginManager().getPlugin("Vault");
@@ -89,7 +95,7 @@ public class Jecon extends JavaPlugin {
             .putCommand("set", new Set(message, registry, repository))
             .putCommand("give", new Give(message, registry, repository))
             .putCommand("take", new Take(message, registry, repository))
-            .putCommand("create", new Create(message, registry, repository))
+            .putCommand("create", new Create(main, message, registry, repository))
             .putCommand("remove", new Remove(message, registry, repository))
             .putCommand("top", new Top(message, registry, repository))
             .putCommand("reload", new Reload(message))
@@ -108,7 +114,7 @@ public class Jecon extends JavaPlugin {
     private void vaultHook(UUIDRegistry registry) {
         getServer().getServicesManager().register(
             Economy.class,
-            new VaultEconomy(registry, this.config.getMainConfig(), this.repository),
+            new VaultEconomy(config.getMainConfig(), registry, repository),
             this,
             ServicePriority.Normal
         );
