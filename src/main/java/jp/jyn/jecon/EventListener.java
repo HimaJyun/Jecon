@@ -6,16 +6,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+
+import java.util.UUID;
 
 @PackagePrivate
 class EventListener implements Listener {
-    private final MainConfig config;
+    private final boolean createAccountOnJoin;
+    private final boolean lazyWrite;
+
     private final VersionChecker checker;
     private final BalanceRepository repository;
 
     @PackagePrivate
     EventListener(MainConfig config, VersionChecker checker, BalanceRepository repository) {
-        this.config = config;
+        this.createAccountOnJoin = config.createAccountOnJoin;
+        this.lazyWrite = config.lazyWrite;
+
         this.checker = checker;
         this.repository = repository;
     }
@@ -27,8 +34,18 @@ class EventListener implements Listener {
             checker.check(player);
         }
 
-        if (config.createAccountOnJoin) {
+        if (createAccountOnJoin) {
             repository.createAccount(player.getUniqueId(), repository.defaultBalance);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        if (!lazyWrite) {
+            return;
+        }
+
+        UUID uuid = e.getPlayer().getUniqueId();
+        repository.save(uuid);
     }
 }

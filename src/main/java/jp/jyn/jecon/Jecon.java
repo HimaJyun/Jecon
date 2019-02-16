@@ -65,7 +65,10 @@ public class Jecon extends JavaPlugin {
 
         // init repository
         repository = new BalanceRepository(main, db);
-        destructor.addFirst(() -> repository = null);
+        destructor.addFirst(() -> {
+            repository.saveAll();
+            repository = null;
+        });
 
         // register vault
         Plugin vault = getServer().getPluginManager().getPlugin("Vault");

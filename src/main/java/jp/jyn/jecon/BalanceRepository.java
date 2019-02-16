@@ -1,5 +1,6 @@
 package jp.jyn.jecon;
 
+import jp.jyn.jbukkitlib.cache.NoOpMap;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.util.PackagePrivate;
@@ -24,8 +25,9 @@ public class BalanceRepository {
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance();
     private final StringVariable variable = StringVariable.init();
 
-    private final MainConfig config;
     private final Database db;
+    private final boolean lazyWrite;
+    private final MainConfig.FormatConfig formatConfig;
     public final BigDecimal defaultBalance;
 
     private final Map<UUID, Integer> uuidToIdCache;
@@ -33,11 +35,13 @@ public class BalanceRepository {
 
     @PackagePrivate
     BalanceRepository(MainConfig config, Database db) {
-        this.config = config;
         this.db = db;
         this.defaultBalance = config.defaultBalance;
-        uuidToIdCache = config.cache.id.create();
-        idToBalanceCache = config.cache.balance.create();
+        this.lazyWrite = config.lazyWrite;
+        formatConfig = config.format;
+
+        uuidToIdCache = new HashMap<>();
+        idToBalanceCache = lazyWrite ? new HashMap<>() : NoOpMap.getInstance();
     }
 
     private long double2long(double value) {
@@ -49,16 +53,15 @@ public class BalanceRepository {
     }
 
     private String format(long value) {
-        final MainConfig.FormatConfig f = config.format;
         long major = value / MULTIPLIER;
         long minor = value % MULTIPLIER;
         TemplateVariable v = variable.clear()
             .put("major", numberFormat.format(major))
             .put("minor", minor)
-            .put("majorcurrency", major > 1 ? f.pluralMajor : f.singularMajor)
-            .put("minorcurrency", minor > 1 ? f.pluralMinor : f.singularMinor);
+            .put("majorcurrency", major > 1 ? formatConfig.pluralMajor : formatConfig.singularMajor)
+            .put("minorcurrency", minor > 1 ? formatConfig.pluralMinor : formatConfig.singularMinor);
 
-        return (minor == 0 ? f.formatZeroMinor : f.format).toString(v);
+        return (minor == 0 ? formatConfig.formatZeroMinor : formatConfig.format).toString(v);
     }
 
     /**
@@ -106,6 +109,26 @@ public class BalanceRepository {
         return id;
     }
 
+    public boolean save(UUID uuid) {
+        Integer id = getId(uuid);
+        OptionalLong balance = idToBalanceCache.remove(id);
+        if (balance != null && balance.isPresent()) {
+            return db.setCreate(id, balance.getAsLong());
+        }
+        return false;
+    }
+
+    public void saveAll() {
+        idToBalanceCache.entrySet().removeIf(e -> {
+            Integer id = e.getKey();
+            OptionalLong balance = e.getValue();
+            if (balance != null && balance.isPresent()) {
+                return db.setCreate(id, balance.getAsLong());
+            }
+            return false;
+        });
+    }
+
     private OptionalLong getRawBalance(Integer id) {
         return idToBalanceCache.computeIfAbsent(id, db::getBalance);
     }
@@ -142,8 +165,10 @@ public class BalanceRepository {
 
     private boolean deposit(UUID uuid, long amount) {
         Integer id = getId(uuid);
-        if (!db.deposit(id, amount)) {
-            return false;
+        if (!lazyWrite) {
+            if (!db.deposit(id, amount)) {
+                return false;
+            }
         }
 
         OptionalLong v = idToBalanceCache.get(id);
@@ -214,12 +239,18 @@ public class BalanceRepository {
 
     private boolean createAccount(UUID uuid, long balance) {
         Integer id = getId(uuid);
-        if (!hasAccount(id) && db.createAccount(id, balance)) {
-            idToBalanceCache.put(id, OptionalLong.of(balance));
-            return true;
+        if (hasAccount(id)) {
+            return false;
         }
 
-        return false;
+        if (!lazyWrite) {
+            if (!db.createAccount(id, balance)) {
+                return false;
+            }
+        }
+
+        idToBalanceCache.put(id, OptionalLong.of(balance));
+        return true;
     }
 
     /**
@@ -288,11 +319,14 @@ public class BalanceRepository {
 
     private boolean set(UUID uuid, long balance) {
         Integer id = getId(uuid);
-        if (db.setBalance(id, balance)) {
-            idToBalanceCache.put(id, OptionalLong.of(balance));
-            return true;
+        if (!lazyWrite) {
+            if (!db.setBalance(id, balance)) {
+                return false;
+            }
         }
-        return false;
+
+        idToBalanceCache.put(id, OptionalLong.of(balance));
+        return true;
     }
 
     /**
