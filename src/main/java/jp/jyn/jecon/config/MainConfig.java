@@ -92,11 +92,11 @@ public class MainConfig {
                 }
             }
 
-            maximumPoolSize = config.getInt("database.connectionPool.maximumPoolSize");
-            minimumIdle = config.getInt("database.connectionPool.minimumIdle");
-            maxLifetime = config.getLong("database.connectionPool.maxLifetime");
-            connectionTimeout = config.getLong("database.connectionPool.connectionTimeout");
-            idleTimeout = config.getLong("database.connectionPool.idleTimeout");
+            maximumPoolSize = config.getInt("connectionPool.maximumPoolSize");
+            minimumIdle = config.getInt("connectionPool.minimumIdle");
+            maxLifetime = config.getLong("connectionPool.maxLifetime");
+            connectionTimeout = config.getLong("connectionPool.connectionTimeout");
+            idleTimeout = config.getLong("connectionPool.idleTimeout");
         }
     }
 }

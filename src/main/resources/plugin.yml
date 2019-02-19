@@ -6,6 +6,7 @@ author: "HimaJyun( https://jyn.jp/ )"
 description: "Jecon is a simple economy plugin."
 load: STARTUP
 loadbefore: [Vault]
+api-version: 1.13
 
 commands:
     jecon:
