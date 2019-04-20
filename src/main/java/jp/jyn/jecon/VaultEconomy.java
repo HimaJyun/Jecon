@@ -17,14 +17,19 @@ import java.util.UUID;
 
 @PackagePrivate
 class VaultEconomy implements Economy {
-    private final BigDecimal defaultBalance;
+    private BigDecimal defaultBalance;
 
-    private final UUIDRegistry registry;
-    private final MainConfig config;
-    private final BalanceRepository repository;
+    private UUIDRegistry registry;
+    private MainConfig config;
+    private BalanceRepository repository;
 
     @PackagePrivate
     VaultEconomy(MainConfig config, UUIDRegistry registry, BalanceRepository repository) {
+        this.init(config, registry, repository);
+    }
+
+    @PackagePrivate
+    void init(MainConfig config, UUIDRegistry registry, BalanceRepository repository) {
         this.registry = registry;
         this.config = config;
         this.repository = repository;

@@ -40,6 +40,7 @@ public class Jecon extends JavaPlugin {
 
     private ConfigLoader config;
     private BalanceRepository repository;
+    private VaultEconomy economy;
 
     // Stack(LIFO)
     private final Deque<Runnable> destructor = new ArrayDeque<>();
@@ -74,13 +75,17 @@ public class Jecon extends JavaPlugin {
         });
 
         // register vault
-        Plugin vault = getServer().getPluginManager().getPlugin("Vault");
-        if (vault != null) {
-            if (vault.isEnabled()) {
-                vaultHook(registry);
-            } else {
-                getServer().getPluginManager().registerEvents(new VaultRegister(registry), this);
+        if (economy == null) {
+            Plugin vault = getServer().getPluginManager().getPlugin("Vault");
+            if (vault != null) {
+                if (vault.isEnabled()) {
+                    vaultHook(registry);
+                } else {
+                    getServer().getPluginManager().registerEvents(new VaultRegister(registry), this);
+                }
             }
+        } else {
+            economy.init(main, registry, repository);
         }
 
         // register events
@@ -112,13 +117,12 @@ public class Jecon extends JavaPlugin {
     }
 
     private void vaultHook(UUIDRegistry registry) {
-        getServer().getServicesManager().register(
-            Economy.class,
-            new VaultEconomy(config.getMainConfig(), registry, repository),
-            this,
-            ServicePriority.Normal
-        );
-        this.destructor.addFirst(() -> getServer().getServicesManager().unregisterAll(this));
+        if (economy != null) {
+            return;
+        }
+
+        economy = new VaultEconomy(config.getMainConfig(), registry, repository);
+        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Normal);
         getLogger().info("Hooked Vault");
     }
 
