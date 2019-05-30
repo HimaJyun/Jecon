@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -236,5 +237,53 @@ public abstract class Database {
 
     public boolean setCreate(int id, long balance) {
         return this.setBalance(id, balance) || this.createAccount(id, balance);
+    }
+
+    public void convert(Database oldDB) {
+        try (Connection old = oldDB.hikari.getConnection();
+             Connection connection = hikari.getConnection()) {
+            try {
+                connection.setAutoCommit(false);
+                try (Statement statement = connection.createStatement()) {
+                    statement.executeUpdate("DELETE FROM `account`");
+                    statement.executeUpdate("DELETE FROM `balance`");
+                }
+
+                try (Statement statement = old.createStatement();
+                     PreparedStatement prepare = connection.prepareStatement(
+                         "INSERT INTO `account` VALUES (?,?)"
+                     )) {
+                    try (ResultSet rs = statement.executeQuery("SELECT `id`,`uuid` FROM `account`")) {
+                        while (rs.next()) {
+                            prepare.setInt(1, rs.getInt("id"));
+                            prepare.setBytes(2, rs.getBytes("uuid"));
+                            prepare.addBatch();
+                        }
+                        prepare.executeBatch();
+                    }
+                }
+
+                try (Statement statement = old.createStatement();
+                     PreparedStatement prepare = connection.prepareStatement(
+                         "INSERT INTO `balance` VALUES(?,?)"
+                     )) {
+                    try (ResultSet rs = statement.executeQuery("SELECT `id`,`balance` FROM `balance`")) {
+                        while (rs.next()) {
+                            prepare.setInt(1, rs.getInt("id"));
+                            prepare.setLong(2, rs.getLong("balance"));
+                            prepare.addBatch();
+                        }
+                        prepare.executeBatch();
+                    }
+                }
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
