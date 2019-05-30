@@ -4,7 +4,7 @@ Economy base plugin for Bukkit/Spigot
 
 ## Features
 * UUID Ready
-* 1.13 Ready
+* 1.13, 1.14 Ready
 * Vault Ready
 * MySQL(+SQLite) Ready
 * Command tab complete
@@ -30,6 +30,7 @@ Economy base plugin for Bukkit/Spigot
 |/money create &lt;player&gt; [balance]|jecon.create|Create &lt;player&gt; account.|OP|
 |/money remove &lt;player&gt;|jecon.remove|Remove &lt;player&gt; account.|OP|
 |/money top [page]|jecon.top|Show billionaires ranking.|OP|
+|/money convert|jecon.convert|Convert database.|
 |/money reload|jecon.reload|Reload the config.|OP|
 |/money version|jecon.version|Show version and check new version.|OP|
 |/money help|N/A|Show helps.|ALL|
@@ -48,7 +49,7 @@ Economy base plugin for Bukkit/Spigot
     <dependency>
         <groupId>jp.jyn</groupId>
         <artifactId>Jecon</artifactId>
-        <version>2.0.2</version>
+        <version>2.1.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>

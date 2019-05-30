@@ -6,7 +6,7 @@ author: "HimaJyun( https://jyn.jp/ )"
 description: "Jecon is a simple economy plugin."
 load: STARTUP
 loadbefore: [Vault]
-api-version: 1.13
+api-version: "1.13"
 
 commands:
     jecon:
@@ -25,6 +25,7 @@ permissions:
             jecon.create: true
             jecon.remove: true
             jecon.top: true
+            jecon.convert: true
             jecon.reload: true
             jecon.version: true
     jecon.user:
@@ -40,6 +41,7 @@ permissions:
             jecon.create: true
             jecon.remove: true
             jecon.top: true
+            jecon.convert: true
             jecon.reload: true
             jecon.version: true
     jecon.show:
@@ -59,6 +61,8 @@ permissions:
     jecon.remove:
         default: op
     jecon.top:
+        default: op
+    jecon.convert:
         default: op
     jecon.reload:
         default: op

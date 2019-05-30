@@ -2,6 +2,7 @@ package jp.jyn.jecon;
 
 import jp.jyn.jbukkitlib.command.SubExecutor;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
+import jp.jyn.jecon.command.Convert;
 import jp.jyn.jecon.command.Create;
 import jp.jyn.jecon.command.Give;
 import jp.jyn.jecon.command.Help;
@@ -103,6 +104,7 @@ public class Jecon extends JavaPlugin {
             .putCommand("create", new Create(main, message, registry, repository))
             .putCommand("remove", new Remove(message, registry, repository))
             .putCommand("top", new Top(message, registry, repository))
+            .putCommand("convert", new Convert(config, repository, db))
             .putCommand("reload", new Reload(message))
             .putCommand("version", new Version(message, checker));
         Help help = new Help(message, builder.getSubCommands());
