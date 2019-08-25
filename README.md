@@ -1,6 +1,6 @@
 # Jecon
 Economy base plugin for Bukkit/Spigot  
-[![Build Status](https://travis-ci.org/HimaJyun/Jecon.svg?branch=master)](https://travis-ci.org/HimaJyun/Jecon)
+[日本語解説](https://e-craft.io/bukkit/plugin/jecon/)
 
 ## Features
 * UUID Ready
