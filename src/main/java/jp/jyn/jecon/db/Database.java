@@ -235,10 +235,6 @@ public abstract class Database {
         return result;
     }
 
-    public boolean setCreate(int id, long balance) {
-        return this.setBalance(id, balance) || this.createAccount(id, balance);
-    }
-
     public void convert(Database oldDB) {
         try (Connection old = oldDB.hikari.getConnection();
              Connection connection = hikari.getConnection()) {

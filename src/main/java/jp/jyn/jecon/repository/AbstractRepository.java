@@ -141,7 +141,7 @@ public abstract class AbstractRepository implements BalanceRepository {
     }
 
     protected boolean withdraw(UUID uuid, long amount) {
-        return this.deposit(uuid, -amount);
+        return this.deposit(uuid, -amount); // -n == +-n
     }
 
     @Override

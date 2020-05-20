@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 @PackagePrivate
@@ -21,13 +22,19 @@ class EventListener implements Listener {
     private final VersionChecker checker;
     private final BalanceRepository repository;
 
+    private final Consumer<UUID> consistency;
+    private final Consumer<UUID> save;
+
     @PackagePrivate
-    EventListener(MainConfig config, VersionChecker checker, BalanceRepository repository) {
+    EventListener(MainConfig config, VersionChecker checker, BalanceRepository repository,
+                  Consumer<UUID> consistency, Consumer<UUID> save) {
         this.createAccountOnJoin = config.createAccountOnJoin;
         this.defaultBalance = config.defaultBalance;
 
         this.checker = checker;
         this.repository = repository;
+        this.consistency = consistency;
+        this.save = save;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -37,6 +44,9 @@ class EventListener implements Listener {
             checker.check(player);
         }
 
+        // ログイン時に一貫性チェック
+        consistency.accept(player.getUniqueId());
+
         if (createAccountOnJoin) {
             repository.createAccount(player.getUniqueId(), defaultBalance);
         }
@@ -44,7 +54,6 @@ class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent e) {
-        UUID uuid = e.getPlayer().getUniqueId();
-        repository.save(uuid);
+        save.accept(e.getPlayer().getUniqueId());
     }
 }

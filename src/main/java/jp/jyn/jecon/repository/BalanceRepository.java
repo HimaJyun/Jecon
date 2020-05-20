@@ -33,20 +33,6 @@ public interface BalanceRepository {
     Optional<String> format(UUID uuid);
 
     /**
-     * <p>Write the balance to the database.</p>
-     * <p>This method may not do anything (eg lazy write is disabled)</p>
-     *
-     * @param uuid Target uuid
-     * @return true if the write succeeded
-     */
-    boolean save(UUID uuid);
-
-    /**
-     * Writes all users loaded in memory to the database.
-     */
-    void saveAll();
-
-    /**
      * Get balance with double
      *
      * @param uuid Target uuid
