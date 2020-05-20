@@ -4,8 +4,8 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
-import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
+import jp.jyn.jecon.repository.BalanceRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,20 +27,21 @@ public class Pay extends SubCommand {
         this.repository = repository;
     }
 
-    @SuppressWarnings("Duplicates")
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        UUID from = sender.getUniqueId();
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        Player player = (Player) sender;
+
+        UUID from = player.getUniqueId();
         String to = args.remove();
         BigDecimal amount = CommandUtils.parseDecimal(args.element());
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            sender.sendMessage(message.invalidArgument.toString("value", args.element()));
+            player.sendMessage(message.invalidArgument.toString("value", args.element()));
             return Result.OK;
         }
 
         // self check
-        if (sender.getName().equalsIgnoreCase(to)) {
-            sender.sendMessage(message.invalidArgument.toString("value", to));
+        if (player.getName().equalsIgnoreCase(to)) {
+            player.sendMessage(message.invalidArgument.toString("value", to));
             return Result.OK;
         }
 
@@ -67,16 +68,16 @@ public class Pay extends SubCommand {
             sender.sendMessage(message.paySuccess.toString(variable.put("name", to)));
 
             // If the recipient is online send a message
-            Player player = Bukkit.getPlayer(uuid.get());
-            if (player != null) {
-                player.sendMessage(message.payReceive.toString(variable.put("name", sender.getName())));
+            Player receiver = Bukkit.getPlayer(uuid.get());
+            if (receiver != null) {
+                receiver.sendMessage(message.payReceive.toString(variable.put("name", sender.getName())));
             }
         });
         return Result.OK;
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

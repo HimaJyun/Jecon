@@ -4,8 +4,8 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
-import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
+import jp.jyn.jecon.repository.BalanceRepository;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -26,20 +26,18 @@ public class Show extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(Player sender, Queue<String> args) {
-        if (!args.isEmpty()) {
-            return execCommand((CommandSender) sender, args);
-        }
-        if (!sender.hasPermission("jecon.show")) {
-            return Result.DONT_HAVE_PERMISSION;
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
+        if (args.isEmpty() && sender instanceof Player) {
+            // self
+            if (!sender.hasPermission("jecon.show")) {
+                return Result.DONT_HAVE_PERMISSION;
+            }
+
+            Player player = (Player) sender;
+            sender.sendMessage(format(player.getUniqueId(), StringVariable.init().put("name", player.getName())));
+            return Result.OK;
         }
 
-        sender.sendMessage(format(sender.getUniqueId(), StringVariable.init().put("name", sender.getName())));
-        return Result.OK;
-    }
-
-    @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
         if (!sender.hasPermission("jecon.show.other")) {
             return Result.DONT_HAVE_PERMISSION;
         }
@@ -60,7 +58,7 @@ public class Show extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

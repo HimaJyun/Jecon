@@ -12,14 +12,6 @@ public class SyncRepository extends AbstractRepository {
     }
 
     @Override
-    public boolean save(UUID uuid) {
-        return true;
-    }
-
-    @Override
-    public void saveAll() { }
-
-    @Override
     protected OptionalLong getRaw(UUID uuid) {
         return db.getBalance(getId(uuid));
     }

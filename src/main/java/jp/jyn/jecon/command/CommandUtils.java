@@ -2,13 +2,14 @@ package jp.jyn.jecon.command;
 
 import jp.jyn.jbukkitlib.util.PackagePrivate;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 // it is bad practice.
 @PackagePrivate
@@ -30,10 +31,15 @@ class CommandUtils {
             return Collections.emptyList();
         }
 
-        return Bukkit.getOnlinePlayers()
-            .stream()
-            .map(HumanEntity::getName)
-            .filter(str -> str.startsWith(args.getFirst()))
-            .collect(Collectors.toList());
+        Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+        List<String> complete = new ArrayList<>(players.size());
+        String arg = args.getFirst();
+        for (Player player : players) {
+            String name = player.getName();
+            if (name.startsWith(arg)) {
+                complete.add(name);
+            }
+        }
+        return complete;
     }
 }

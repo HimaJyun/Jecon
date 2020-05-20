@@ -4,59 +4,60 @@ versionCheck: true
 defaultBalance: 10000.0
 createAccountOnJoin: true
 
-# Do you want to enable lazy writing?
-# When enabled, it will delay writing to the database until the user logs out. (It improves performance.)
-# If you log in to "multiple servers" "sharing the database" at the "same time", the balance will be incorrect.
+# lazyWrite reduces database writes and improves performance.
+# However, if you have multiple servers sharing the database (eg BungeeCord), players balance may be temporarily inaccurate.
+# The cache-coherency algorithm ensures that the balance will eventually be correct.
+# If you need to keep players balance always accurate, disable this feature.
 lazyWrite: true
 
 format:
-    singularMajor: "dollar"
-    pluralMajor: "dollars"
-    singularMinor: "cent"
-    pluralMinor: "cents"
-    format: "{major} {majorcurrency} {minor} {minorcurrency}"
-    # Optional
-    #formatZeroMinor: "{major} {majorcurrency}"
-    # Example:
-    #format: "$ {major}.{minor}"
-    #format: "{major}円"
+  singularMajor: "dollar"
+  pluralMajor: "dollars"
+  singularMinor: "cent"
+  pluralMinor: "cents"
+  format: "{major} {majorcurrency} {minor} {minorcurrency}"
+  # Optional
+  #formatZeroMinor: "{major} {majorcurrency}"
+  # Example:
+  #format: "$ {major}.{minor}"
+  #format: "{major}円"
 
 database:
-    # Database type. (sqlite/mysql)
-    type: sqlite
-    sqlite:
-        file: "jecon.db"
-    mysql:
-        host: "localhost:3306"
-        name: "jecon"
-        username: "root"
-        password: "your_mysql_password"
-        # It is recommended to stop caching when using MySQL
-        # If you have caches in your application, database cache is "wasted memory".
-        init: "SET SESSION query_cache_type=0"
-        properties:
-            "useSSL": "false"
-            # encoding
-            #"useUnicode": "true"
-            #"characterEncoding": "UTF-8"
-            #"characterSetResults": "UTF-8"
-            # performance
-            "maintainTimeStats": "false"
-            "elideSetAutoCommits": "true"
-            "useLocalSessionState": "true"
-            "alwaysSendSetIsolation": "false"
-            "cacheServerConfiguration": "true"
-            "cachePrepStmts": "true"
-            "prepStmtCacheSize": "250"
-            "prepStmtCacheSqlLimit": "2048"
-            #"useServerPrepStmts": "true"
-    connectionPool:
-        # -1 is default
-        maximumPoolSize: -1
-        minimumIdle: -1
-        maxLifetime: -1
-        connectionTimeout: -1
-        idleTimeout: -1
+  # Database type. (sqlite/mysql)
+  type: sqlite
+  sqlite:
+    file: "jecon.db"
+  mysql:
+    host: "localhost:3306"
+    name: "jecon"
+    username: "root"
+    password: "your_mysql_password"
+    # It is recommended to stop caching when using MySQL
+    # If you have caches in your application, database cache is "wasted memory".
+    init: "SET SESSION query_cache_type=0"
+    properties:
+      "useSSL": "false"
+      # encoding
+      #"useUnicode": "true"
+      #"characterEncoding": "UTF-8"
+      #"characterSetResults": "UTF-8"
+      # performance
+      "maintainTimeStats": "false"
+      "elideSetAutoCommits": "true"
+      "useLocalSessionState": "true"
+      "alwaysSendSetIsolation": "false"
+      "cacheServerConfiguration": "true"
+      "cachePrepStmts": "true"
+      "prepStmtCacheSize": "250"
+      "prepStmtCacheSqlLimit": "2048"
+      #"useServerPrepStmts": "true"
+  connectionPool:
+    # -1 is default
+    maximumPoolSize: -1
+    minimumIdle: -1
+    maxLifetime: -1
+    connectionTimeout: -1
+    idleTimeout: -1
 
 # Don't touch
 version: 3

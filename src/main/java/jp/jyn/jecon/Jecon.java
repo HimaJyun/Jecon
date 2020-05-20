@@ -35,6 +35,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 public class Jecon extends JavaPlugin {
     private static Jecon instance = null;
@@ -61,17 +63,37 @@ public class Jecon extends JavaPlugin {
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 
         VersionChecker checker = new VersionChecker(main.versionCheck, message);
-        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> checker.check(Bukkit.getConsoleSender()), 20 * 30);
+        BukkitTask task = getServer().getScheduler().runTaskLater(
+            this,
+            () -> checker.check(Bukkit.getConsoleSender()), 20 * 30
+        );
         destructor.addFirst(task::cancel);
 
         // connect db
         Database db = Database.connect(main.database);
         destructor.addFirst(db::close);
 
+        // methods for internal use.
+        Consumer<UUID> consistency;
+        Consumer<UUID> save;
+        Runnable saveAll;
         // init repository
-        repository = main.lazyWrite ? new LazyRepository(main, db) : new SyncRepository(main, db);
+        if (main.lazyWrite) {
+            LazyRepository lazy = new LazyRepository(main, db);
+            repository = lazy;
+
+            consistency = lazy::consistency;
+            save = lazy::save;
+            saveAll = lazy::saveAll;
+        } else {
+            repository = new SyncRepository(main, db);
+
+            consistency = u -> {};
+            save = u -> {};
+            saveAll = () -> {};
+        }
         destructor.addFirst(() -> {
-            repository.saveAll();
+            saveAll.run();
             repository = null;
         });
 
@@ -90,7 +112,9 @@ public class Jecon extends JavaPlugin {
         }
 
         // register events
-        getServer().getPluginManager().registerEvents(new EventListener(main, checker, repository), this);
+        getServer().getPluginManager().registerEvents(
+            new EventListener(main, checker, repository, consistency, save), this
+        );
         destructor.addFirst(() -> HandlerList.unregisterAll(this));
 
         // register commands
@@ -104,7 +128,7 @@ public class Jecon extends JavaPlugin {
             .putCommand("create", new Create(main, message, registry, repository))
             .putCommand("remove", new Remove(message, registry, repository))
             .putCommand("top", new Top(message, registry, repository))
-            .putCommand("convert", new Convert(config, repository, db))
+            .putCommand("convert", new Convert(config, repository, db, saveAll))
             .putCommand("reload", new Reload(message))
             .putCommand("version", new Version(message, checker));
         Help help = new Help(message, builder.getSubCommands());
@@ -165,9 +189,8 @@ public class Jecon extends JavaPlugin {
             if (!e.getPlugin().getName().equals("Vault")) {
                 return;
             }
-            Jecon jecon = Jecon.getInstance();
-            jecon.vaultHook(registry);
-            PluginEnableEvent.getHandlerList().unregister(jecon);
+            Jecon.getInstance().vaultHook(registry);
+            PluginEnableEvent.getHandlerList().unregister(this);
         }
     }
 }

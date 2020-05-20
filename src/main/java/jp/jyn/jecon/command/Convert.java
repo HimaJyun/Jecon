@@ -18,16 +18,18 @@ public class Convert extends SubCommand {
     private final BalanceRepository repository;
     private final Database oldDB;
     private final MainConfig.DatabaseConfig old;
+    private final Runnable save;
 
-    public Convert(ConfigLoader loader, BalanceRepository repository,Database oldDB) {
+    public Convert(ConfigLoader loader, BalanceRepository repository, Database oldDB, Runnable save) {
         this.loader = loader;
         this.repository = repository;
         this.oldDB = oldDB;
         this.old = loader.getMainConfig().database;
+        this.save = save;
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         // 割と強引
         YamlLoader config = new YamlLoader(Jecon.getInstance(), "config.yml");
         if (Optional.ofNullable(args.poll()).map(a -> a.equalsIgnoreCase("confirm")).orElse(false)) {
@@ -82,7 +84,7 @@ public class Convert extends SubCommand {
         Database db = Database.connect(loader.getMainConfig().database);
 
         sender.sendMessage("Saving unsaved data.");
-        repository.saveAll();
+        save.run();
 
         sender.sendMessage("Converting...");
         db.convert(oldDB);
