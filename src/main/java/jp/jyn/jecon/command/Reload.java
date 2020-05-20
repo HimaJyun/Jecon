@@ -20,7 +20,7 @@ public class Reload extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         Plugin plugin = Jecon.getInstance();
         plugin.getServer().getPluginManager().callEvent(new PluginDisableEvent(plugin));
         plugin.onDisable();

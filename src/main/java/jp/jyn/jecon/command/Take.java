@@ -4,8 +4,8 @@ import jp.jyn.jbukkitlib.command.SubCommand;
 import jp.jyn.jbukkitlib.config.parser.template.variable.StringVariable;
 import jp.jyn.jbukkitlib.config.parser.template.variable.TemplateVariable;
 import jp.jyn.jbukkitlib.uuid.UUIDRegistry;
-import jp.jyn.jecon.repository.BalanceRepository;
 import jp.jyn.jecon.config.MessageConfig;
+import jp.jyn.jecon.repository.BalanceRepository;
 import org.bukkit.command.CommandSender;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ public class Take extends SubCommand {
 
     @SuppressWarnings("Duplicates")
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         String to = args.remove();
         BigDecimal amount = CommandUtils.parseDecimal(args.element());
         if (amount == null) {
@@ -51,7 +51,7 @@ public class Take extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

@@ -26,7 +26,7 @@ public class Give extends SubCommand {
 
     @SuppressWarnings("Duplicates")
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         String to = args.remove();
         BigDecimal amount = CommandUtils.parseDecimal(args.element());
         if (amount == null) {
@@ -51,7 +51,7 @@ public class Give extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

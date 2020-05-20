@@ -30,7 +30,7 @@ public class Create extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         String name = args.remove();
         final BigDecimal balance;
         try {
@@ -58,7 +58,7 @@ public class Create extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return CommandUtils.tabCompletePlayer(args);
     }
 

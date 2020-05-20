@@ -19,7 +19,7 @@ public class Convert extends SubCommand {
     private final Database oldDB;
     private final MainConfig.DatabaseConfig old;
 
-    public Convert(ConfigLoader loader, BalanceRepository repository,Database oldDB) {
+    public Convert(ConfigLoader loader, BalanceRepository repository, Database oldDB) {
         this.loader = loader;
         this.repository = repository;
         this.oldDB = oldDB;
@@ -27,7 +27,7 @@ public class Convert extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         // 割と強引
         YamlLoader config = new YamlLoader(Jecon.getInstance(), "config.yml");
         if (Optional.ofNullable(args.poll()).map(a -> a.equalsIgnoreCase("confirm")).orElse(false)) {

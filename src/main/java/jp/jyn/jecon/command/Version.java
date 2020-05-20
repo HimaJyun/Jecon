@@ -21,7 +21,7 @@ public class Version extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         sender.sendMessage(MessageConfig.HEADER);
         sender.sendMessage(description.getName() + " - " + description.getVersion());
         sender.sendMessage(description.getDescription());

@@ -29,7 +29,7 @@ public class Top extends SubCommand {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         final int page;
         try {
             page = args.isEmpty() ? 1 : Integer.parseInt(args.element());
@@ -57,7 +57,7 @@ public class Top extends SubCommand {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         return Collections.emptyList();
     }
 

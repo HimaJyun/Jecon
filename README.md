@@ -4,7 +4,7 @@ Economy base plugin for Bukkit/Spigot
 
 ## Features
 * UUID Ready
-* 1.13, 1.14 Ready
+* 1.15 Ready
 * Vault Ready
 * MySQL(+SQLite) Ready
 * Command tab complete
@@ -38,21 +38,23 @@ Economy base plugin for Bukkit/Spigot
 # API
 ## Maven
 ```xml
-<repositories>
-    <repository>
-        <id>himajyun-repo</id>
-        <url>https://himajyun.github.io/mvn-repo/</url>
-    </repository>
-</repositories>
-
-<dependencies>
-    <dependency>
-        <groupId>jp.jyn</groupId>
-        <artifactId>Jecon</artifactId>
-        <version>2.1.0</version>
-        <scope>provided</scope>
-    </dependency>
-</dependencies>
+<project>
+    <repositories>
+        <repository>
+            <id>himajyun-repo</id>
+            <url>https://himajyun.github.io/mvn-repo/</url>
+        </repository>
+    </repositories>
+    
+    <dependencies>
+        <dependency>
+            <groupId>jp.jyn</groupId>
+            <artifactId>Jecon</artifactId>
+            <version>2.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
 ```
 
 ## Usage

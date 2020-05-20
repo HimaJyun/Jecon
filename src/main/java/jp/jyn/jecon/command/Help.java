@@ -32,7 +32,7 @@ public class Help extends SubCommand implements ErrorExecutor {
             case ERROR:
                 sendSubDetails(sender, error.subCommand);
                 break;
-            case COMMAND_NOT_FOUND:
+            case UNKNOWN_COMMAND:
                 sendSubCommands(sender);
                 break;
             case DONT_HAVE_PERMISSION:
@@ -53,7 +53,7 @@ public class Help extends SubCommand implements ErrorExecutor {
     }
 
     @Override
-    protected Result execCommand(CommandSender sender, Queue<String> args) {
+    protected Result onCommand(CommandSender sender, Queue<String> args) {
         // search detail help.
         SubCommand cmd = null;
         if (!args.isEmpty()) {
@@ -71,7 +71,7 @@ public class Help extends SubCommand implements ErrorExecutor {
     }
 
     @Override
-    protected List<String> execTabComplete(CommandSender sender, Deque<String> args) {
+    protected List<String> onTabComplete(CommandSender sender, Deque<String> args) {
         if (args.size() == 1) {
             return commands.keySet().stream()
                 .filter(str -> str.startsWith(args.getFirst()))

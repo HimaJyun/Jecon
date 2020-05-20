@@ -61,7 +61,10 @@ public class Jecon extends JavaPlugin {
         UUIDRegistry registry = UUIDRegistry.getSharedCacheRegistry(this);
 
         VersionChecker checker = new VersionChecker(main.versionCheck, message);
-        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> checker.check(Bukkit.getConsoleSender()), 20 * 30);
+        BukkitTask task = getServer().getScheduler().runTaskLater(
+            this,
+            () -> checker.check(Bukkit.getConsoleSender()), 20 * 30
+        );
         destructor.addFirst(task::cancel);
 
         // connect db
@@ -165,9 +168,8 @@ public class Jecon extends JavaPlugin {
             if (!e.getPlugin().getName().equals("Vault")) {
                 return;
             }
-            Jecon jecon = Jecon.getInstance();
-            jecon.vaultHook(registry);
-            PluginEnableEvent.getHandlerList().unregister(jecon);
+            Jecon.getInstance().vaultHook(registry);
+            PluginEnableEvent.getHandlerList().unregister(this);
         }
     }
 }
