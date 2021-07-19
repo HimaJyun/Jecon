@@ -16,11 +16,18 @@ format:
   singularMinor: "cent"
   pluralMinor: "cents"
   format: "{major} {majorcurrency} {minor} {minorcurrency}"
-  # Optional
-  #formatZeroMinor: "{major} {majorcurrency}"
   # Example:
   #format: "$ {major}.{minor}"
   #format: "{major}円"
+  # Optional
+  #formatZeroMinor: "{major} {majorcurrency}"
+  minorType: asis # omit/accurate/asis
+  # Hint:
+  # omit: 1.02 -> 1.02, 3.40 -> 3.4
+  # accurate: 1.02 -> 1.02, 3.40 -> 3.40
+  # asis: 1.02 -> 1.2, 3.40 -> 3.40
+  #   omit or accurate for number style format (eg: 1.02 -> $ 1.02, 3.40 -> $ 3.4 / $ 3.40)
+  #   asis for text style format (eg: 1.02 -> 1 dollar 2 cents, 3.40 -> 3 dollars 40 cents)
 
 database:
   # Database type. (sqlite/mysql)
@@ -60,4 +67,4 @@ database:
     idleTimeout: -1
 
 # Don't touch
-version: 3
+version: 4

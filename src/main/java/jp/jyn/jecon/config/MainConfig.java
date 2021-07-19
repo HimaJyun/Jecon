@@ -34,12 +34,15 @@ public class MainConfig {
     }
 
     public final static class FormatConfig {
+        public enum MinorType {OMIT, ACCURATE, ASIS}
+
         public final String singularMajor;
         public final String pluralMajor;
         public final String singularMinor;
         public final String pluralMinor;
         public final TemplateParser format;
         public final TemplateParser formatZeroMinor;
+        public final MinorType minorType;
 
         private FormatConfig(ConfigurationSection config) {
             singularMajor = config.getString("singularMajor");
@@ -52,6 +55,8 @@ public class MainConfig {
             } else {
                 formatZeroMinor = format;
             }
+
+            minorType = MinorType.valueOf(config.getString("minorType").toUpperCase(Locale.ENGLISH));
         }
     }
 
@@ -78,7 +83,8 @@ public class MainConfig {
                 username = null;
                 password = null;
             } else if (type.equals("mysql")) {
-                url = String.format("jdbc:mysql://%s/%s", config.getString("mysql.host"), config.getString("mysql.name"));
+                url = String.format("jdbc:mysql://%s/%s", config.getString("mysql.host"), config.getString("mysql" +
+                    ".name"));
                 username = config.getString("mysql.username");
                 password = config.getString("mysql.password");
             } else {

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class MainMigration {
     private final static String FILE = "config.yml";
-    private final static int CURRENT_VERSION = 3;
+    private final static int CURRENT_VERSION = 4;
 
     private MainMigration() {}
 
@@ -27,6 +27,8 @@ public class MainMigration {
                 v1to2(config);
             case 2:
                 v2to3(config);
+            case 3:
+                v3to4(config);
                 break;
             default:
                 logger.severe(MigrationUtils.ERROR_1);
@@ -79,6 +81,11 @@ public class MainMigration {
         config.set("Database", null);
 
         config.set("version", 3);
+    }
+
+    private static void v3to4(ConfigurationSection config) {
+        config.set("format.minorType", "asis");
+        config.set("version", 4);
     }
 
     @SuppressWarnings("SpellCheckingInspection")

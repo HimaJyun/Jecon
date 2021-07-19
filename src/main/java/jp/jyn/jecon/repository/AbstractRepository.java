@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
 import java.util.UUID;
+import java.util.function.LongFunction;
 
 public abstract class AbstractRepository implements BalanceRepository {
     public final static int FRACTIONAL_DIGITS = 2;
@@ -24,6 +25,7 @@ public abstract class AbstractRepository implements BalanceRepository {
 
     protected final Database db;
     private final MainConfig.FormatConfig formatConfig;
+    private final LongFunction<String> minorFormat;
     private final Map<UUID, Integer> uuidToIdCache;
 
     protected AbstractRepository(MainConfig config, Database db) {
@@ -31,6 +33,20 @@ public abstract class AbstractRepository implements BalanceRepository {
         formatConfig = config.format;
 
         uuidToIdCache = new HashMap<>();
+
+        switch (formatConfig.minorType) {
+            case OMIT:
+                minorFormat = this::minorOmit;
+                break;
+            case ACCURATE:
+                minorFormat = this::minorAccurate;
+                break;
+            case ASIS:
+                minorFormat = String::valueOf;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     private long double2long(double value) {
@@ -46,11 +62,33 @@ public abstract class AbstractRepository implements BalanceRepository {
         long minor = value % MULTIPLIER;
         TemplateVariable v = variable.clear()
             .put("major", numberFormat.format(major))
-            .put("minor", minor)
+            .put("minor", minorFormat.apply(minor))
             .put("majorcurrency", major > 1 ? formatConfig.pluralMajor : formatConfig.singularMajor)
             .put("minorcurrency", minor > 1 ? formatConfig.pluralMinor : formatConfig.singularMinor);
 
         return (minor == 0 ? formatConfig.formatZeroMinor : formatConfig.format).toString(v);
+    }
+
+    private String minorOmit(long minor) {
+        if (minor == 0) {
+            return "0";
+        } else if (minor < 10) {
+            return new String(new char[]{'0', (char) (minor + '0')});
+        } else if ((minor % 10) == 0) {
+            return String.valueOf(minor / 10);
+        } else {
+            return String.valueOf(minor);
+        }
+    }
+
+    private String minorAccurate(long minor) {
+        if (minor == 0) {
+            return "0";
+        } else if (minor < 10) {
+            return new String(new char[]{'0', (char) (minor + '0')});
+        } else {
+            return String.valueOf(minor);
+        }
     }
 
     protected final Integer getId(UUID uuid) {
